@@ -1,7 +1,7 @@
 # CLAUDE.md - Peter's Games Codebase Guide
 
 ## Project Structure
-Each game in this repository is a standalone project. All commands should be run from within each game's directory, not from the root folder.
+Each game in this repository is a standalone project. All commands should be run from within each game's directory, not from the root folder. Further instructions for each game can be found in their respective README.md files.
 
 ## Build & Run Commands
 For each game directory:
