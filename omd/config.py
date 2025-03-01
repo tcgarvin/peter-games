@@ -59,7 +59,7 @@ ENEMY_TYPES = {
 KNOCKBACK_FORCE = 8.0  # Higher value means stronger knockback
 
 # Map settings
-WALL_COLOR = (100, 100, 100)
+WALL_COLOR = (80, 70, 60)  # Brown-ish walls
 OBJECTIVE_COLOR = ORANGE
 OBJECTIVE_RADIUS = 40
 OBJECTIVE_HEALTH = 500

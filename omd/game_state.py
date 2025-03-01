@@ -86,12 +86,12 @@ class GameState:
         if self.wave_number >= 5:
             enemy_types.append("tank")
         
-        # Define valid spawn areas (inside screen away from borders)
+        # Define valid spawn areas (at maze entrances)
         valid_spawns = [
-            (50, 50),  # Top-left
-            (SCREEN_WIDTH - 50, 50),  # Top-right
-            (50, SCREEN_HEIGHT - 50),  # Bottom-left
-            (SCREEN_WIDTH - 50, SCREEN_HEIGHT - 50)  # Bottom-right
+            (SCREEN_WIDTH // 3, 30),  # Top entrance
+            (SCREEN_WIDTH - 30, 2 * SCREEN_HEIGHT // 3),  # Right entrance
+            (2 * SCREEN_WIDTH // 3, SCREEN_HEIGHT - 30),  # Bottom entrance
+            (30, SCREEN_HEIGHT // 3)  # Left entrance
         ]
             
         # Spawn enemies in valid areas

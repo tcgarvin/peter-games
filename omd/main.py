@@ -4,6 +4,7 @@ Main entry point for the game.
 import pygame
 import sys
 import math
+import random
 from config import *
 from entities import Player
 from game_state import GameState

@@ -135,6 +135,9 @@ class Enemy:
         new_x = self.x + move_x
         new_y = self.y + move_y
         
+        current_time = pygame.time.get_ticks()
+        moved = False
+        
         # Check if direct movement is possible
         if (0 + self.radius <= new_x <= SCREEN_WIDTH - self.radius and
             0 + self.radius <= new_y <= SCREEN_HEIGHT - self.radius):
@@ -144,41 +147,86 @@ class Enemy:
                 self.y = new_y
                 return  # Movement successful
         
-        # Direct movement failed, try to find a way around obstacles
+        # Direct movement failed, implementation of wall following algorithm
         
-        # First check if we can move horizontally
-        if 0 + self.radius <= self.x + move_x <= SCREEN_WIDTH - self.radius:
-            if not self._check_obstacle_collision(self.x + move_x, self.y, obstacles):
-                self.x += move_x
-        
-        # Then check if we can move vertically
-        if 0 + self.radius <= self.y + move_y <= SCREEN_HEIGHT - self.radius:
-            if not self._check_obstacle_collision(self.x, self.y + move_y, obstacles):
-                self.y += move_y
-                
-        # If we couldn't move at all, try to find a way around the obstacle
-        # by testing 8 directions around the enemy
-        current_time = pygame.time.get_ticks()
-        
-        # Only try alternative paths if we haven't moved
-        if self.x == new_x and self.y == new_y and current_time - self.last_direction_change > 500:
-            directions = [
-                (1, 0), (0.7, 0.7), (0, 1), (-0.7, 0.7),
-                (-1, 0), (-0.7, -0.7), (0, -1), (0.7, -0.7)
-            ]
+        # First, try to move along the wall by checking adjacent positions
+        # We'll try perpendicular directions to the goal first
+        perpendicular_directions = []
+        if abs(dx) > abs(dy):  # Moving primarily horizontally
+            # Try vertical movements first
+            perpendicular_directions = [(0, 1), (0, -1)]
+        else:  # Moving primarily vertically
+            # Try horizontal movements first
+            perpendicular_directions = [(1, 0), (-1, 0)]
             
-            # Try each direction until we find one that works
-            for dir_x, dir_y in directions:
-                test_x = self.x + dir_x * self.speed
-                test_y = self.y + dir_y * self.speed
+        # Add diagonal directions after perpendicular ones
+        all_directions = perpendicular_directions + [
+            (0.7, 0.7), (0.7, -0.7), (-0.7, 0.7), (-0.7, -0.7),
+            (1, 0), (0, 1), (-1, 0), (0, -1)
+        ]
+        
+        # If we're close to getting unstuck, try a 45-degree approach
+        if current_time - self.last_direction_change > 1000:
+            # Check if we're close to a corner by testing diagonals
+            corner_escape = False
+            for deg45_x, deg45_y in [(0.7, 0.7), (0.7, -0.7), (-0.7, 0.7), (-0.7, -0.7)]:
+                test_x = self.x + deg45_x * self.speed * 2
+                test_y = self.y + deg45_y * self.speed * 2
                 
                 if (0 + self.radius <= test_x <= SCREEN_WIDTH - self.radius and
                     0 + self.radius <= test_y <= SCREEN_HEIGHT - self.radius):
+                    # Check if this diagonal path leads to an open area
                     if not self._check_obstacle_collision(test_x, test_y, obstacles):
+                        # Test if the diagonal path gets us closer to the objective
+                        new_dist = math.sqrt((test_x - objective_x)**2 + (test_y - objective_y)**2)
+                        if new_dist < distance:
+                            # We found a good diagonal escape
+                            self.x = self.x + deg45_x * self.speed
+                            self.y = self.y + deg45_y * self.speed
+                            self.last_direction_change = current_time
+                            corner_escape = True
+                            break
+                            
+            if corner_escape:
+                return
+                
+        # Try each direction until we find one that works
+        for dir_x, dir_y in all_directions:
+            # Normalize speed for diagonal movement
+            move_speed = self.speed
+            if abs(dir_x) > 0 and abs(dir_y) > 0:
+                move_speed *= 0.7  # Approximately 1/sqrt(2)
+                
+            test_x = self.x + dir_x * move_speed
+            test_y = self.y + dir_y * move_speed
+            
+            if (0 + self.radius <= test_x <= SCREEN_WIDTH - self.radius and
+                0 + self.radius <= test_y <= SCREEN_HEIGHT - self.radius):
+                if not self._check_obstacle_collision(test_x, test_y, obstacles):
+                    # If this direction would move us away from the objective, 
+                    # only consider it if we're stuck
+                    new_dist = math.sqrt((test_x - objective_x)**2 + (test_y - objective_y)**2)
+                    if new_dist <= distance or current_time - self.last_direction_change > 500:
                         self.x = test_x
                         self.y = test_y
-                        self.last_direction_change = current_time
+                        # Only reset the direction change timer if we had to move away from target
+                        if new_dist > distance:
+                            self.last_direction_change = current_time
+                        moved = True
                         break
+        
+        # If we're completely stuck, just try any direction
+        if not moved and current_time - self.last_direction_change > 1500:
+            rand_angle = random.uniform(0, 2 * math.pi)
+            test_x = self.x + math.cos(rand_angle) * self.speed
+            test_y = self.y + math.sin(rand_angle) * self.speed
+            
+            if (0 + self.radius <= test_x <= SCREEN_WIDTH - self.radius and
+                0 + self.radius <= test_y <= SCREEN_HEIGHT - self.radius):
+                if not self._check_obstacle_collision(test_x, test_y, obstacles):
+                    self.x = test_x
+                    self.y = test_y
+                    self.last_direction_change = current_time
                             
     def _check_obstacle_collision(self, x, y, obstacles):
         # Check if position collides with any obstacle
