@@ -24,20 +24,20 @@ LIGHT_BROWN = (222, 184, 135)
 # Regiment constants
 REGIMENT_WIDTH = 30  # This is the shorter side (depth of formation)
 REGIMENT_HEIGHT = 60  # This is the longer side (width of formation)
-REGIMENT_SPEED = 1.0  # Increased movement speed
-WHEEL_ANGLE = 2.0  # Increased turning speed
-COOLDOWN_TICKS = 180  # Time between volleys (reduced)
-BULLET_SPEED = 2.5  # Slow bullet speed
-BULLET_LIFETIME = 400  # Longer bullet lifetime for greater range
-BULLET_DAMAGE = 5  # Reduced per-bullet damage (more bullets per volley)
+REGIMENT_SPEED = 0.25  # Extremely slow movement speed
+WHEEL_ANGLE = 0.4  # Very slow turning speed
+COOLDOWN_TICKS = 180  # Time between volleys
+BULLET_SPEED = 5.0  # Faster bullet speed
+BULLET_LIFETIME = 250  # Adjusted lifetime for faster bullets
+BULLET_DAMAGE = 5  # Damage per bullet
 BULLET_RADIUS = 2
 BULLETS_PER_VOLLEY = 10  # Number of bullets fired in a volley
 REGIMENT_HEALTH = 100
-MAX_BULLETS = 500  # Increased maximum bullets on screen
+MAX_BULLETS = 500  # Maximum bullets on screen
 
 # Movement restrictions
-SETUP_TIME = 30  # Frames regiment must be stationary before firing (reduced)
-RECOVERY_TIME = 30  # Frames regiment cannot move after firing (reduced)
+SETUP_TIME = 45  # Frames regiment must be stationary before firing (increased)
+RECOVERY_TIME = 60  # Frames regiment cannot move after firing (increased)
 
 # Field constants
 GRASS_COLOR = (100, 200, 100)
@@ -215,12 +215,15 @@ class Regiment:
         rect_points = self.get_corners()
         pygame.draw.polygon(screen, color, rect_points)
         
-        # Draw a directional indicator
+        # Calculate center for other UI elements
         center_x = sum(x for x, y in rect_points) / 4
         center_y = sum(y for x, y in rect_points) / 4
-        front_x = center_x + math.cos(self.angle_rad) * (self.width / 2)
-        front_y = center_y + math.sin(self.angle_rad) * (self.width / 2)
-        pygame.draw.line(screen, WHITE, (center_x, center_y), (front_x, front_y), 2)
+        
+        # Draw a directional indicator only in debug mode
+        if DEBUG_MODE:
+            front_x = center_x + math.cos(self.angle_rad) * (self.width / 2)
+            front_y = center_y + math.sin(self.angle_rad) * (self.width / 2)
+            pygame.draw.line(screen, WHITE, (center_x, center_y), (front_x, front_y), 2)
         
         # Draw health bar
         health_width = 40
@@ -360,9 +363,9 @@ class AI:
             while angle_diff < -math.pi:
                 angle_diff += 2 * math.pi
             
-            # Check if regiment is in a good firing position and ready to fire
-            in_range = 200 <= min_distance <= 350
-            well_aligned = abs(angle_diff) < math.radians(15)
+            # Adjusted optimal firing range (increased for slower movement)
+            in_range = 250 <= min_distance <= 450
+            well_aligned = abs(angle_diff) < math.radians(10)
             can_fire = regiment.can_fire()
             
             # First priority: fire if possible in a good position
@@ -374,18 +377,18 @@ class AI:
                 action = "hold"  # Continue aiming
                 
             # Third priority: get into position
-            elif min_distance > 350:
+            elif min_distance > 450:
                 # Too far away - need to get closer
-                if abs(angle_diff) < math.radians(30):
+                if abs(angle_diff) < math.radians(20):
                     action = "move_forward"
                 elif angle_diff > 0:
                     action = "wheel_right"
                 else:
                     action = "wheel_left"
                 
-            elif min_distance < 200:
+            elif min_distance < 250:
                 # Too close - need to back up
-                if abs(angle_diff) < math.radians(30):
+                if abs(angle_diff) < math.radians(20):
                     action = "move_backward"
                 elif angle_diff > 0:
                     action = "wheel_right"
@@ -404,8 +407,8 @@ class AI:
             else:
                 action = "hold"
             
-            # Add a bit of randomness to make behavior less predictable
-            if random.random() < 0.05:  # 5% chance of random action
+            # Reduce randomness for more deliberate movement
+            if random.random() < 0.02:  # 2% chance of random action
                 action = random.choice(["move_forward", "move_backward", "wheel_left", "wheel_right", "hold"])
                 
             actions.append(action)
