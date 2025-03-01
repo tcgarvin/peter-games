@@ -5,5 +5,8 @@ description = "A classic Spacewar game with ships and asteroids"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "pyflakes>=3.2.0",
     "pygame>=2.0.0",
+    "pylint>=3.3.4",
+    "radon>=6.0.1",
 ]
