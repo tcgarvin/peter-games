@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "orcs-must-die-2d"
+version = "0.1.0"
+description = "A 2D, top-down version of Orcs Must Die for 2 players"
+authors = [
+    {name = "Peter", email = "peter@example.com"},
+]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "pygame>=2.1.0",
+]
+
+[tool.setuptools]
+packages = ["orcs_must_die_2d"]
