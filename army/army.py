@@ -454,6 +454,272 @@ def initialize_game():
     return red_regiments, blue_regiments, red_ai, blue_ai, bullets
 
 
+def handle_events(events):
+    """Process pygame events and return game control flags
+    
+    Args:
+        events: List of pygame events to process
+        
+    Returns:
+        Tuple of (quit_requested, toggle_debug, speed_change, restart_game)
+    """
+    quit_requested = False
+    toggle_debug = False
+    speed_change = None
+    restart_game = False
+    
+    for event in events:
+        if event.type == pygame.QUIT:
+            quit_requested = True
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE or event.key == pygame.K_q:
+                quit_requested = True
+            elif event.key == pygame.K_SPACE:
+                restart_game = True
+            elif event.key == pygame.K_d:
+                toggle_debug = True
+            elif event.key == pygame.K_1:
+                speed_change = 1
+            elif event.key == pygame.K_2:
+                speed_change = 2
+            elif event.key == pygame.K_3:
+                speed_change = 3
+                
+    return (quit_requested, toggle_debug, speed_change, restart_game)
+
+
+def update_regiments(regiments, actions, enemy_regiments, bullets, team):
+    """Update regiments based on AI actions and handle firing
+    
+    Args:
+        regiments: List of regiments to update
+        actions: List of actions for each regiment
+        enemy_regiments: List of enemy regiments (for targeting)
+        bullets: Current list of bullets
+        team: Team color ("red" or "blue")
+        
+    Returns:
+        Tuple of (updated bullets list, number of new bullets fired)
+    """
+    new_bullets_count = 0
+    
+    for i, regiment in enumerate(regiments):
+        action = actions[i]
+        regiment.update(action)
+        
+        if action == "fire" and len(bullets) < MAX_BULLETS:
+            regiment_bullets = regiment.fire()
+            if regiment_bullets:
+                bullets.extend(regiment_bullets)
+                new_bullets_count += len(regiment_bullets)
+                
+    return bullets, new_bullets_count
+
+
+def update_bullets(bullets, red_regiments, blue_regiments):
+    """Update bullet positions and handle collisions
+    
+    Args:
+        bullets: List of bullets to update
+        red_regiments: List of red regiments for collision detection
+        blue_regiments: List of blue regiments for collision detection
+        
+    Returns:
+        Tuple of (updated bullets list, red damage, blue damage)
+    """
+    red_damage = 0
+    blue_damage = 0
+    i = 0
+    
+    while i < len(bullets):
+        bullet = bullets[i]
+        bullet.update()
+        
+        # Check for collisions with regiments
+        hit = False
+        
+        if bullet.team == "red":
+            # Red bullet can hit blue regiments
+            for regiment in blue_regiments:
+                if not regiment.destroyed and regiment.is_colliding(bullet):
+                    regiment.take_damage(BULLET_DAMAGE)
+                    red_damage += BULLET_DAMAGE
+                    hit = True
+                    break
+        else:
+            # Blue bullet can hit red regiments
+            for regiment in red_regiments:
+                if not regiment.destroyed and regiment.is_colliding(bullet):
+                    regiment.take_damage(BULLET_DAMAGE)
+                    blue_damage += BULLET_DAMAGE
+                    hit = True
+                    break
+        
+        # Remove the bullet if it hit something or expired
+        if hit or bullet.is_expired():
+            bullets.pop(i)
+        else:
+            i += 1
+            
+    return bullets, red_damage, blue_damage
+
+
+def check_win_condition(red_regiments, blue_regiments):
+    """Check if either team has won
+    
+    Args:
+        red_regiments: List of red regiments
+        blue_regiments: List of blue regiments
+        
+    Returns:
+        Tuple of (game_over, winner)
+    """
+    red_alive = sum(1 for r in red_regiments if not r.destroyed)
+    blue_alive = sum(1 for r in blue_regiments if not r.destroyed)
+    
+    if red_alive == 0:
+        return True, "blue"
+    elif blue_alive == 0:
+        return True, "red"
+    else:
+        return False, None
+
+
+def count_alive_regiments(regiments):
+    """Count non-destroyed regiments
+    
+    Args:
+        regiments: List of regiments to count
+        
+    Returns:
+        Number of non-destroyed regiments
+    """
+    return sum(1 for r in regiments if not r.destroyed)
+
+
+def draw_team_status(screen, red_regiments, blue_regiments):
+    """Draw team status information
+    
+    Args:
+        screen: Pygame screen to draw on
+        red_regiments: List of red regiments
+        blue_regiments: List of blue regiments
+    """
+    red_alive = count_alive_regiments(red_regiments)
+    blue_alive = count_alive_regiments(blue_regiments)
+    
+    # Draw team status
+    pygame.draw.rect(screen, BLACK, (10, 10, 220, 65))
+    
+    # Red team info
+    pygame.draw.rect(screen, RED, (15, 15, 20, 20))
+    red_text = font.render(f"Red Team: {red_alive}/3 alive", True, WHITE)
+    screen.blit(red_text, (40, 15))
+    
+    # Blue team info
+    pygame.draw.rect(screen, BLUE, (15, 40, 20, 20))
+    blue_text = font.render(f"Blue Team: {blue_alive}/3 alive", True, WHITE)
+    screen.blit(blue_text, (40, 40))
+
+
+def draw_controls(screen):
+    """Draw control information
+    
+    Args:
+        screen: Pygame screen to draw on
+    """
+    controls_y = SCREEN_HEIGHT - 80
+    pygame.draw.rect(screen, BLACK, (10, controls_y, 220, 70))
+    
+    controls_title = font.render("Controls:", True, WHITE)
+    screen.blit(controls_title, (15, controls_y + 5))
+    
+    controls_text1 = font.render("Q/ESC: Quit", True, WHITE)
+    controls_text2 = font.render("D: Toggle Debug Info", True, WHITE)
+    controls_text3 = font.render("1/2/3: Set Speed", True, WHITE)
+    
+    screen.blit(controls_text1, (15, controls_y + 25))
+    screen.blit(controls_text2, (15, controls_y + 45))
+    screen.blit(controls_text3, (15, controls_y + 65))
+
+
+def draw_stats(screen, bullets_fired, damage_dealt, fps_display, game_speed):
+    """Draw game statistics
+    
+    Args:
+        screen: Pygame screen to draw on
+        bullets_fired: Dictionary with bullets fired by each team
+        damage_dealt: Dictionary with damage dealt by each team
+        fps_display: Current FPS value
+        game_speed: Current game speed multiplier
+    """
+    stats_x = SCREEN_WIDTH - 230
+    pygame.draw.rect(screen, BLACK, (stats_x, 10, 220, 110))
+    
+    bullets_text = font.render(f"Bullets Fired: R:{bullets_fired['red']} B:{bullets_fired['blue']}", True, WHITE)
+    damage_text = font.render(f"Damage Dealt: R:{damage_dealt['red']} B:{damage_dealt['blue']}", True, WHITE)
+    fps_text = font.render(f"FPS: {fps_display:.1f} (Speed: {game_speed}x)", True, WHITE)
+    debug_text = font.render(f"Debug Mode: {'ON' if DEBUG_MODE else 'OFF'}", True, GREEN if DEBUG_MODE else RED)
+    
+    screen.blit(bullets_text, (stats_x + 10, 15))
+    screen.blit(damage_text, (stats_x + 10, 40))
+    screen.blit(fps_text, (stats_x + 10, 65))
+    screen.blit(debug_text, (stats_x + 10, 90))
+
+
+def draw_game_over(screen, winner):
+    """Draw game over screen
+    
+    Args:
+        screen: Pygame screen to draw on
+        winner: Winner team color ("red" or "blue")
+    """
+    overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 128))
+    screen.blit(overlay, (0, 0))
+    
+    winner_color = RED if winner == "red" else BLUE
+    winner_text = large_font.render(f"{winner.upper()} TEAM WINS!", True, winner_color)
+    restart_text = font.render("Press SPACE to restart", True, WHITE)
+    
+    screen.blit(winner_text, (SCREEN_WIDTH // 2 - winner_text.get_width() // 2, 
+                             SCREEN_HEIGHT // 2 - winner_text.get_height() // 2))
+    screen.blit(restart_text, (SCREEN_WIDTH // 2 - restart_text.get_width() // 2, 
+                              SCREEN_HEIGHT // 2 + 50))
+
+
+def calculate_fps(fps_count, fps_update_time):
+    """Calculate current FPS
+    
+    Args:
+        fps_count: Current frame count since last update
+        fps_update_time: Time of last FPS update
+        
+    Returns:
+        Tuple of (new_fps_display, new_fps_count, new_fps_update_time)
+    """
+    current_time = time.time()
+    if current_time - fps_update_time > 0.5:  # Update FPS every half second
+        fps_display = fps_count / (current_time - fps_update_time)
+        return fps_display, 0, current_time
+    else:
+        return None, fps_count + 1, fps_update_time
+
+
+def cap_framerate(frame_start_time, game_speed):
+    """Cap the frame rate based on game speed
+    
+    Args:
+        frame_start_time: Time when frame processing started
+        game_speed: Current game speed multiplier
+    """
+    target_frame_time = 1.0 / (60 * game_speed)
+    elapsed = time.time() - frame_start_time
+    if elapsed < target_frame_time:
+        delay = target_frame_time - elapsed
+        time.sleep(delay)
+
+
 def main():
     """Main game function"""
     global DEBUG_MODE
@@ -482,31 +748,24 @@ def main():
         frame_start_time = time.time()
         
         # Event handling
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE or event.key == pygame.K_q:
-                    # Quit with ESC or Q
-                    running = False
-                elif event.key == pygame.K_SPACE:
-                    # Reset game
-                    if game_over:
-                        red_regiments, blue_regiments, red_ai, blue_ai, bullets = initialize_game()
-                        game_over = False
-                        winner = None
-                        bullets_fired = {"red": 0, "blue": 0}
-                        damage_dealt = {"red": 0, "blue": 0}
-                elif event.key == pygame.K_d:
-                    # Toggle debug mode with D key
-                    DEBUG_MODE = not DEBUG_MODE
-                    print(f"Debug mode: {'ON' if DEBUG_MODE else 'OFF'}")
-                elif event.key == pygame.K_1:
-                    game_speed = 1
-                elif event.key == pygame.K_2:
-                    game_speed = 2
-                elif event.key == pygame.K_3:
-                    game_speed = 3
+        quit_requested, toggle_debug, new_speed, restart_requested = handle_events(pygame.event.get())
+        
+        if quit_requested:
+            running = False
+            
+        if toggle_debug:
+            DEBUG_MODE = not DEBUG_MODE
+            print(f"Debug mode: {'ON' if DEBUG_MODE else 'OFF'}")
+            
+        if new_speed is not None:
+            game_speed = new_speed
+            
+        if restart_requested and game_over:
+            red_regiments, blue_regiments, red_ai, blue_ai, bullets = initialize_game()
+            game_over = False
+            winner = None
+            bullets_fired = {"red": 0, "blue": 0}
+            damage_dealt = {"red": 0, "blue": 0}
 
         # Game logic (skip if game over)
         if not game_over:
@@ -514,68 +773,21 @@ def main():
             red_actions = red_ai.make_decisions(blue_regiments, bullets)
             blue_actions = blue_ai.make_decisions(red_regiments, bullets)
             
-            # Update red regiments
-            for i, regiment in enumerate(red_regiments):
-                action = red_actions[i]
-                regiment.update(action)
-                if action == "fire" and len(bullets) < MAX_BULLETS:
-                    new_bullets = regiment.fire()
-                    if new_bullets:
-                        bullets.extend(new_bullets)
-                        bullets_fired["red"] += len(new_bullets)
+            # Update regiments and handle firing
+            bullets, red_bullets = update_regiments(red_regiments, red_actions, blue_regiments, bullets, "red")
+            bullets, blue_bullets = update_regiments(blue_regiments, blue_actions, red_regiments, bullets, "blue")
             
-            # Update blue regiments
-            for i, regiment in enumerate(blue_regiments):
-                action = blue_actions[i]
-                regiment.update(action)
-                if action == "fire" and len(bullets) < MAX_BULLETS:
-                    new_bullets = regiment.fire()
-                    if new_bullets:
-                        bullets.extend(new_bullets)
-                        bullets_fired["blue"] += len(new_bullets)
+            bullets_fired["red"] += red_bullets
+            bullets_fired["blue"] += blue_bullets
             
-            # Update bullets
-            i = 0
-            while i < len(bullets):
-                bullet = bullets[i]
-                bullet.update()
-                
-                # Check for collisions with regiments
-                hit = False
-                
-                if bullet.team == "red":
-                    # Red bullet can hit blue regiments
-                    for regiment in blue_regiments:
-                        if not regiment.destroyed and regiment.is_colliding(bullet):
-                            regiment.take_damage(BULLET_DAMAGE)
-                            damage_dealt["red"] += BULLET_DAMAGE
-                            hit = True
-                            break
-                else:
-                    # Blue bullet can hit red regiments
-                    for regiment in red_regiments:
-                        if not regiment.destroyed and regiment.is_colliding(bullet):
-                            regiment.take_damage(BULLET_DAMAGE)
-                            damage_dealt["blue"] += BULLET_DAMAGE
-                            hit = True
-                            break
-                
-                # Remove the bullet if it hit something or expired
-                if hit or bullet.is_expired():
-                    bullets.pop(i)
-                else:
-                    i += 1
+            # Update bullets and handle collisions
+            bullets, red_damage, blue_damage = update_bullets(bullets, red_regiments, blue_regiments)
+            
+            damage_dealt["red"] += red_damage
+            damage_dealt["blue"] += blue_damage
             
             # Check win condition
-            red_alive = sum(1 for r in red_regiments if not r.destroyed)
-            blue_alive = sum(1 for r in blue_regiments if not r.destroyed)
-            
-            if red_alive == 0:
-                game_over = True
-                winner = "blue"
-            elif blue_alive == 0:
-                game_over = True
-                winner = "red"
+            game_over, winner = check_win_condition(red_regiments, blue_regiments)
 
         # Rendering
         draw_battlefield(screen)
@@ -588,84 +800,25 @@ def main():
         for regiment in red_regiments + blue_regiments:
             regiment.draw(screen)
         
-        # Draw HUD
-        red_alive = sum(1 for r in red_regiments if not r.destroyed)
-        blue_alive = sum(1 for r in blue_regiments if not r.destroyed)
+        # Draw HUD elements
+        draw_team_status(screen, red_regiments, blue_regiments)
+        draw_controls(screen)
+        draw_stats(screen, bullets_fired, damage_dealt, fps_display, game_speed)
         
-        # Draw team status
-        pygame.draw.rect(screen, BLACK, (10, 10, 220, 65))
-        
-        # Red team info
-        pygame.draw.rect(screen, RED, (15, 15, 20, 20))
-        red_text = font.render(f"Red Team: {red_alive}/3 alive", True, WHITE)
-        screen.blit(red_text, (40, 15))
-        
-        # Blue team info
-        pygame.draw.rect(screen, BLUE, (15, 40, 20, 20))
-        blue_text = font.render(f"Blue Team: {blue_alive}/3 alive", True, WHITE)
-        screen.blit(blue_text, (40, 40))
-        
-        # Controls info at bottom left
-        controls_y = SCREEN_HEIGHT - 80
-        pygame.draw.rect(screen, BLACK, (10, controls_y, 220, 70))
-        
-        controls_title = font.render("Controls:", True, WHITE)
-        screen.blit(controls_title, (15, controls_y + 5))
-        
-        controls_text1 = font.render("Q/ESC: Quit", True, WHITE)
-        controls_text2 = font.render("D: Toggle Debug Info", True, WHITE)
-        controls_text3 = font.render("1/2/3: Set Speed", True, WHITE)
-        
-        screen.blit(controls_text1, (15, controls_y + 25))
-        screen.blit(controls_text2, (15, controls_y + 45))
-        screen.blit(controls_text3, (15, controls_y + 65))
-        
-        # Stats box
-        stats_x = SCREEN_WIDTH - 230
-        pygame.draw.rect(screen, BLACK, (stats_x, 10, 220, 110))
-        
-        # Stats text
-        bullets_text = font.render(f"Bullets Fired: R:{bullets_fired['red']} B:{bullets_fired['blue']}", True, WHITE)
-        damage_text = font.render(f"Damage Dealt: R:{damage_dealt['red']} B:{damage_dealt['blue']}", True, WHITE)
-        fps_text = font.render(f"FPS: {fps_display:.1f} (Speed: {game_speed}x)", True, WHITE)
-        debug_text = font.render(f"Debug Mode: {'ON' if DEBUG_MODE else 'OFF'}", True, GREEN if DEBUG_MODE else RED)
-        
-        screen.blit(bullets_text, (stats_x + 10, 15))
-        screen.blit(damage_text, (stats_x + 10, 40))
-        screen.blit(fps_text, (stats_x + 10, 65))
-        screen.blit(debug_text, (stats_x + 10, 90))
-        
-        # Game over screen
+        # Draw game over screen if needed
         if game_over:
-            overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 128))
-            screen.blit(overlay, (0, 0))
-            
-            winner_color = RED if winner == "red" else BLUE
-            winner_text = large_font.render(f"{winner.upper()} TEAM WINS!", True, winner_color)
-            restart_text = font.render("Press SPACE to restart", True, WHITE)
-            
-            screen.blit(winner_text, (SCREEN_WIDTH // 2 - winner_text.get_width() // 2, 
-                                     SCREEN_HEIGHT // 2 - winner_text.get_height() // 2))
-            screen.blit(restart_text, (SCREEN_WIDTH // 2 - restart_text.get_width() // 2, 
-                                      SCREEN_HEIGHT // 2 + 50))
+            draw_game_over(screen, winner)
         
         # FPS calculation
-        fps_count += 1
-        if time.time() - fps_update_time > 0.5:  # Update FPS every half second
-            fps_display = fps_count / (time.time() - fps_update_time)
-            fps_count = 0
-            fps_update_time = time.time()
+        new_fps, fps_count, fps_update_time = calculate_fps(fps_count, fps_update_time)
+        if new_fps is not None:
+            fps_display = new_fps
         
         # Update display
         pygame.display.flip()
         
-        # Cap the frame rate based on game speed
-        target_frame_time = 1.0 / (60 * game_speed)
-        elapsed = time.time() - frame_start_time
-        if elapsed < target_frame_time:
-            delay = target_frame_time - elapsed
-            time.sleep(delay)
+        # Cap the frame rate
+        cap_framerate(frame_start_time, game_speed)
 
     pygame.quit()
     sys.exit()
