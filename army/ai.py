@@ -144,7 +144,8 @@ class AI:
 
 class CautiousAI(AI):
     """Prefers to maintain distance and carefully aim shots."""
-    def __init__(self, team, regiments):
+    def __init__(self, team, regiments, randomize=True):
+        # Base values
         personality = {
             "optimal_distance_min": 350,    # Prefers longer range
             "optimal_distance_max": 500,
@@ -155,6 +156,18 @@ class CautiousAI(AI):
             "coordination": 0.7,          # Good coordination
             "caution": 0.9                # Very cautious
         }
+        
+        # Add randomization if requested
+        if randomize:
+            personality["optimal_distance_min"] += random.randint(-30, 30)
+            personality["optimal_distance_max"] += random.randint(-40, 40)
+            personality["alignment_threshold"] += random.uniform(-1.5, 1.5)
+            personality["maneuver_threshold"] += random.uniform(-2, 2)
+            personality["random_action_chance"] = max(0.001, personality["random_action_chance"] + random.uniform(-0.005, 0.01))
+            personality["aggression"] = max(0.1, min(0.4, personality["aggression"] + random.uniform(-0.1, 0.1)))
+            personality["coordination"] = max(0.5, min(0.9, personality["coordination"] + random.uniform(-0.1, 0.1)))
+            personality["caution"] = max(0.7, min(1.0, personality["caution"] + random.uniform(-0.1, 0.1)))
+            
         super().__init__(team, regiments, personality)
         
         # Set AI type for UI display
@@ -164,7 +177,8 @@ class CautiousAI(AI):
 
 class AggressiveAI(AI):
     """Prefers to close distance and fire at close range."""
-    def __init__(self, team, regiments):
+    def __init__(self, team, regiments, randomize=True):
+        # Base values
         personality = {
             "optimal_distance_min": 180,    # Closer combat
             "optimal_distance_max": 350,
@@ -175,6 +189,18 @@ class AggressiveAI(AI):
             "coordination": 0.3,          # Less coordination
             "caution": 0.2                # Reckless
         }
+        
+        # Add randomization if requested
+        if randomize:
+            personality["optimal_distance_min"] += random.randint(-30, 30)
+            personality["optimal_distance_max"] += random.randint(-30, 30)
+            personality["alignment_threshold"] += random.uniform(-2, 3)
+            personality["maneuver_threshold"] += random.uniform(-2, 4)
+            personality["random_action_chance"] = max(0.01, min(0.06, personality["random_action_chance"] + random.uniform(-0.01, 0.03)))
+            personality["aggression"] = max(0.7, min(1.0, personality["aggression"] + random.uniform(-0.1, 0.1)))
+            personality["coordination"] = max(0.1, min(0.5, personality["coordination"] + random.uniform(-0.1, 0.1)))
+            personality["caution"] = max(0.1, min(0.4, personality["caution"] + random.uniform(-0.1, 0.1)))
+            
         super().__init__(team, regiments, personality)
         
         # Set AI type for UI display
@@ -184,7 +210,8 @@ class AggressiveAI(AI):
 
 class FlankingAI(AI):
     """Tries to move to flanking positions when possible."""
-    def __init__(self, team, regiments):
+    def __init__(self, team, regiments, randomize=True):
+        # Base values
         personality = {
             "optimal_distance_min": 250,
             "optimal_distance_max": 400,
@@ -195,6 +222,18 @@ class FlankingAI(AI):
             "coordination": 0.5,
             "caution": 0.4
         }
+        
+        # Add randomization if requested
+        if randomize:
+            personality["optimal_distance_min"] += random.randint(-30, 30)
+            personality["optimal_distance_max"] += random.randint(-30, 30)
+            personality["alignment_threshold"] += random.uniform(-2, 2)
+            personality["maneuver_threshold"] += random.uniform(-2, 2)
+            personality["random_action_chance"] = max(0.01, min(0.04, personality["random_action_chance"] + random.uniform(-0.01, 0.01)))
+            personality["aggression"] = max(0.4, min(0.7, personality["aggression"] + random.uniform(-0.1, 0.1)))
+            personality["coordination"] = max(0.3, min(0.7, personality["coordination"] + random.uniform(-0.1, 0.1)))
+            personality["caution"] = max(0.3, min(0.6, personality["caution"] + random.uniform(-0.1, 0.1)))
+            
         super().__init__(team, regiments, personality)
         
         # Set AI type for UI display

@@ -51,20 +51,33 @@ def initialize_game():
         y = BATTLEFIELD_MARGIN + 150 + i * 180
         blue_regiments.append(Regiment(x, y, 180, "blue"))
     
-    # Create regiment-specific AIs with different personalities
-    red_regiment_ais = [
-        AggressiveAI("red", [red_regiments[0]]),
-        FlankingAI("red", [red_regiments[1]]),
-        CautiousAI("red", [red_regiments[2]])
-    ]
+    # AI types to choose from
+    ai_types = [AggressiveAI, FlankingAI, CautiousAI]
     
-    blue_regiment_ais = [
-        CautiousAI("blue", [blue_regiments[0]]),
-        AggressiveAI("blue", [blue_regiments[1]]),
-        FlankingAI("blue", [blue_regiments[2]])
-    ]
+    # Create regiment-specific AIs with random personalities
+    red_regiment_ais = []
+    blue_regiment_ais = []
+    
+    # Assign random AI types to each regiment
+    for i in range(3):
+        # Choose random AI types for this regiment
+        red_ai_type = random.choice(ai_types)
+        blue_ai_type = random.choice(ai_types)
+        
+        # Create the AIs with random parameter variations
+        red_regiment_ais.append(red_ai_type("red", [red_regiments[i]], randomize=True))
+        blue_regiment_ais.append(blue_ai_type("blue", [blue_regiments[i]], randomize=True))
     
     bullets = []
+    
+    # Print the AI assignments for this battle
+    print("Red Team AI Types:")
+    for i, ai in enumerate(red_regiment_ais):
+        print(f"  Regiment {i+1}: {red_regiments[i].ai_type}")
+        
+    print("Blue Team AI Types:")
+    for i, ai in enumerate(blue_regiment_ais):
+        print(f"  Regiment {i+1}: {blue_regiments[i].ai_type}")
     
     return red_regiments, blue_regiments, red_regiment_ais, blue_regiment_ais, bullets
 
