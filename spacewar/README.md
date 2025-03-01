@@ -1,13 +1,15 @@
 # Spacewar Game
 
-A classic arcade-style space game featuring ships and asteroids in space combat.
+A classic arcade-style space game featuring player and AI ships battling in an asteroid field.
 
 ## Features
 
-- Ships controlled by AI (player controls coming soon)
-- Asteroid field with different sized asteroids
-- Physics-based movement with momentum in space
-- Ships with asteroid avoidance AI
+- Player-controlled ship using arrow keys
+- Multiple AI-controlled ships with asteroid avoidance behaviors
+- Asteroid field with different sized asteroids that break apart when hit
+- Physics-based movement with momentum in frictionless space
+- Competitive gameplay where ships can destroy each other
+- Realistic collision detection and screen wrapping
 
 ## How to Run
 
@@ -19,11 +21,28 @@ uv run python spacewar.py
 
 ## Controls
 
-- Currently AI-only mode
-- Future: WASD/Arrows for movement, Space for firing weapons
+- **Arrow Keys**: Control your ship
+  - ↑ (Up Arrow): Apply thrust
+  - ← (Left Arrow): Rotate counterclockwise
+  - → (Right Arrow): Rotate clockwise
+- **R**: Restart the game
+- **ESC**: Quit the game
 
 ## Game Design
 
-The game features ships navigating through asteroid fields. The AI focuses on avoiding collisions with asteroids while maintaining momentum-based movement in a frictionless space environment.
+The game features a player ship and AI ships navigating through asteroid fields. All ships use physics-based movement in a frictionless space environment with momentum and screen wrapping.
 
-Future versions will include player controls, combat mechanics between ships, and more advanced AI behaviors.
+AI ships use sophisticated behaviors:
+- **Cruise Mode**: Normal navigation when no threats are nearby
+- **Avoid Mode**: Careful maneuvering to avoid approaching asteroids
+- **Evade Mode**: Emergency evasive action when collision is imminent
+
+The last ship surviving wins the game. Asteroids break into smaller pieces when hit, creating increasingly complex environments as the game progresses.
+
+## Future Enhancements
+
+- Weapon systems for ships
+- Power-ups and special abilities
+- Multiple game modes
+- More advanced AI behaviors and tactics
+- Visual effects and sound
