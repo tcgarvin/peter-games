@@ -1,7 +1,7 @@
 import math
 import random
 import pygame
-from typing import List, Tuple, Optional
+from typing import List, Tuple
 
 # Colors
 WHITE = (255, 255, 255)

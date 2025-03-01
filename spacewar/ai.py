@@ -1,6 +1,6 @@
 import math
 import random
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple
 
 from entities import Ship, Asteroid, DeliveryZone, SCREEN_WIDTH, SCREEN_HEIGHT, MAX_PICKUP_VELOCITY
 
