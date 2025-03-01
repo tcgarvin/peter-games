@@ -9,7 +9,7 @@ from entities import (
     generate_random_asteroids, generate_random_point_away_from_entities,
     MAX_ASTEROIDS, ZONE_SPAWN_INTERVAL
 )
-from ai import ShipAI
+from ai import create_random_ai
 
 def draw_menu(screen, font, large_font, selected_option):
     # Clear screen
@@ -84,7 +84,7 @@ def initialize_game(num_players):
     # Fill remaining slots with AI ships (up to 3 total ships)
     for i in range(num_players, 3):
         ships.append(Ship(ship_positions[i][0], ship_positions[i][1], random.uniform(0, 360), True))
-        ship_ais.append(ShipAI(ships[-1]))
+        ship_ais.append(create_random_ai(ships[-1]))
     
     # Ensure all ships start with no cargo and zero credits
     for ship in ships:

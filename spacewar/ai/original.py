@@ -1,8 +1,13 @@
+"""
+Original AI implementation for Spacewar ships.
+"""
 import math
 import random
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from entities import Ship, Asteroid, DeliveryZone, SCREEN_WIDTH, SCREEN_HEIGHT, MAX_PICKUP_VELOCITY
+
+from .base import BaseShipAI
 
 # AI Constants
 DANGER_DISTANCE = 100  # Distance at which asteroid is considered a threat
@@ -10,19 +15,22 @@ REACTION_DISTANCE = 150  # Distance at which AI starts to react to asteroids
 PREDICTION_TIME = 60  # Frames to look ahead for collision prediction
 COURSE_CHANGE_DELAY = 30  # Minimum frames between major course changes
 
-class ShipAI:
-    """Base AI class for controlling ships"""
+class OriginalShipAI(BaseShipAI):
+    """The original ship AI implementation."""
     
     def __init__(self, ship: Ship):
-        self.ship = ship
+        super().__init__(ship)
         self.course_change_timer = 0
         self.current_target_angle = random.uniform(0, 360)
         self.current_mode = "cruise"  # cruise, avoid, evade, pickup, dropoff
         self.target_zone = None
     
-    def make_decision(self, asteroids: List[Asteroid], other_ships: List[Ship], delivery_zones: List[DeliveryZone] = None) -> Tuple[int, int]:
+    def make_decision(self, 
+                     asteroids: List[Asteroid], 
+                     other_ships: List[Ship], 
+                     delivery_zones: Optional[List[DeliveryZone]] = None) -> Tuple[int, int]:
         """
-        Make a decision on ship controls based on environment
+        Make a decision on ship controls based on environment.
         Returns: (thrust, rotation)
         """
         # Decrement timer for course changes
@@ -83,7 +91,11 @@ class ShipAI:
         
         return thrust, rotation
     
-    def _find_closest_asteroid(self, asteroids: List[Asteroid]) -> Tuple[Asteroid, float]:
+    def get_description(self) -> str:
+        """Return a human-readable description of this AI."""
+        return "Original AI - Basic avoidance and delivery behavior"
+    
+    def _find_closest_asteroid(self, asteroids: List[Asteroid]) -> Tuple[Optional[Asteroid], float]:
         """Find the closest asteroid and its distance"""
         closest = None
         min_distance = float('inf')
@@ -215,7 +227,8 @@ class ShipAI:
         
         # Apply avoidance controls
         distance = self.ship.get_distance(asteroid)
-        thrust_intensity = 1.0 - min(1.0, (distance - self.ship.size - asteroid.size) / (REACTION_DISTANCE - self.ship.size - asteroid.size))
+        thrust_intensity = 1.0 - min(1.0, (distance - self.ship.size - asteroid.size) / 
+                                    (REACTION_DISTANCE - self.ship.size - asteroid.size))
         
         thrust = 1 if thrust_intensity > 0.3 else 0
         
