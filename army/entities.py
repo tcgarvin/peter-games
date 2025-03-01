@@ -3,15 +3,15 @@ import random
 import pygame
 
 # Regiment constants
-REGIMENT_WIDTH = 30  # This is the shorter side (depth of formation)
-REGIMENT_HEIGHT = 60  # This is the longer side (width of formation)
-REGIMENT_SPEED = 0.25  # Extremely slow movement speed
+REGIMENT_WIDTH = 60  # This is the shorter side (depth of formation)
+REGIMENT_HEIGHT = 120  # This is the longer side (width of formation)
+REGIMENT_SPEED = 0.5  # Increased movement speed for larger map
 WHEEL_ANGLE = 0.4  # Very slow turning speed
 COOLDOWN_TICKS = 180  # Time between volleys
-BULLET_SPEED = 5.0  # Faster bullet speed
+BULLET_SPEED = 10.0  # Faster bullet speed for larger map
 BULLET_LIFETIME = 250  # Adjusted lifetime for faster bullets
 BULLET_DAMAGE = 5  # Damage per bullet
-BULLET_RADIUS = 2
+BULLET_RADIUS = 4  # Larger bullets to be visible on bigger screen
 BULLETS_PER_VOLLEY = 10  # Number of bullets fired in a volley
 REGIMENT_HEALTH = 100
 MAX_BULLETS = 500  # Maximum bullets on screen
@@ -120,9 +120,9 @@ class Regiment:
         # All other actions (like "hold" or "fire") just keep position
         
         # Keep regiment within battlefield (needs to be passed in from game)
-        margin = 30  # buffer to account for rectangle size when rotated
-        self.x = max(50 + margin, min(self.x, 1000 - 50 - margin))
-        self.y = max(50 + margin, min(self.y, 700 - 50 - margin))
+        margin = 60  # buffer to account for rectangle size when rotated
+        self.x = max(100 + margin, min(self.x, 2000 - 100 - margin))
+        self.y = max(100 + margin, min(self.y, 1400 - 100 - margin))
         
         # Update cooldown
         if self.cooldown > 0:

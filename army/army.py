@@ -18,9 +18,9 @@ from game_logic import (
 pygame.init()
 
 # Constants
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 700
-BATTLEFIELD_MARGIN = 50
+SCREEN_WIDTH = 2000
+SCREEN_HEIGHT = 1400
+BATTLEFIELD_MARGIN = 100
 
 # Game setup
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -41,14 +41,14 @@ def initialize_game():
     
     # Red team on left - formations facing right (0 degrees)
     for i in range(3):
-        x = BATTLEFIELD_MARGIN + 150
-        y = BATTLEFIELD_MARGIN + 150 + i * 180
+        x = BATTLEFIELD_MARGIN + 300
+        y = BATTLEFIELD_MARGIN + 300 + i * 360
         red_regiments.append(Regiment(x, y, 0, "red"))
     
     # Blue team on right - formations facing left (180 degrees)
     for i in range(3):
-        x = SCREEN_WIDTH - BATTLEFIELD_MARGIN - 150
-        y = BATTLEFIELD_MARGIN + 150 + i * 180
+        x = SCREEN_WIDTH - BATTLEFIELD_MARGIN - 300
+        y = BATTLEFIELD_MARGIN + 300 + i * 360
         blue_regiments.append(Regiment(x, y, 180, "blue"))
     
     # AI types to choose from

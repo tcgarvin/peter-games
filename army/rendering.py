@@ -48,40 +48,40 @@ def draw_team_status(screen, red_regiments, blue_regiments, font):
     blue_alive = count_alive_regiments(blue_regiments)
     
     # Determine panel height based on debug mode
-    panel_height = 65
+    panel_height = 110
     if DEBUG_MODE:
-        panel_height = 165  # Bigger to show AI types
+        panel_height = 270  # Bigger to show AI types
     
     # Draw team status
-    pygame.draw.rect(screen, BLACK, (10, 10, 220, panel_height))
+    pygame.draw.rect(screen, BLACK, (20, 20, 400, panel_height))
     
     # Team information headers
-    pygame.draw.rect(screen, RED, (15, 15, 20, 20))
+    pygame.draw.rect(screen, RED, (30, 30, 40, 40))
     red_text = font.render(f"Red Team: {red_alive}/3 alive", True, WHITE)
-    screen.blit(red_text, (40, 15))
+    screen.blit(red_text, (80, 35))
     
-    pygame.draw.rect(screen, BLUE, (15, 40, 20, 20))
+    pygame.draw.rect(screen, BLUE, (30, 80, 40, 40))
     blue_text = font.render(f"Blue Team: {blue_alive}/3 alive", True, WHITE)
-    screen.blit(blue_text, (40, 40))
+    screen.blit(blue_text, (80, 85))
     
     # Show AI information in debug mode
     if DEBUG_MODE:
         title_text = font.render("Regiment AI Types:", True, YELLOW)
-        screen.blit(title_text, (15, 70))
+        screen.blit(title_text, (30, 130))
         
-        y_pos = 95
+        y_pos = 170
         for i, regiment in enumerate(red_regiments):
             if not regiment.destroyed:
                 reg_text = font.render(f"Red {i+1}: {regiment.ai_type}", True, RED)
-                screen.blit(reg_text, (20, y_pos))
-                y_pos += 20
+                screen.blit(reg_text, (40, y_pos))
+                y_pos += 30
                 
-        y_pos = 95
+        y_pos = 170
         for i, regiment in enumerate(blue_regiments):
             if not regiment.destroyed:
                 reg_text = font.render(f"Blue {i+1}: {regiment.ai_type}", True, BLUE)
-                screen.blit(reg_text, (120, y_pos))
-                y_pos += 20
+                screen.blit(reg_text, (220, y_pos))
+                y_pos += 30
 
 def draw_controls(screen, font, screen_height):
     """Draw control information
@@ -91,19 +91,21 @@ def draw_controls(screen, font, screen_height):
         font: Pygame font to use for text
         screen_height: Height of the screen
     """
-    controls_y = screen_height - 80
-    pygame.draw.rect(screen, BLACK, (10, controls_y, 220, 70))
+    controls_y = screen_height - 140
+    pygame.draw.rect(screen, BLACK, (20, controls_y, 440, 120))
     
     controls_title = font.render("Controls:", True, WHITE)
-    screen.blit(controls_title, (15, controls_y + 5))
+    screen.blit(controls_title, (30, controls_y + 10))
     
     controls_text1 = font.render("Q/ESC: Quit", True, WHITE)
     controls_text2 = font.render("D: Toggle Debug Info", True, WHITE)
     controls_text3 = font.render("1/2/3: Set Speed", True, WHITE)
+    controls_text4 = font.render("SPACE: Restart (after game over)", True, WHITE)
     
-    screen.blit(controls_text1, (15, controls_y + 25))
-    screen.blit(controls_text2, (15, controls_y + 45))
-    screen.blit(controls_text3, (15, controls_y + 65))
+    screen.blit(controls_text1, (30, controls_y + 40))
+    screen.blit(controls_text2, (30, controls_y + 65))
+    screen.blit(controls_text3, (30, controls_y + 90))
+    screen.blit(controls_text4, (220, controls_y + 40))
 
 def draw_stats(screen, bullets_fired, damage_dealt, fps_display, game_speed, screen_width):
     """Draw game statistics
@@ -116,20 +118,20 @@ def draw_stats(screen, bullets_fired, damage_dealt, fps_display, game_speed, scr
         game_speed: Current game speed multiplier
         screen_width: Width of the screen
     """
-    stats_x = screen_width - 230
-    pygame.draw.rect(screen, BLACK, (stats_x, 10, 220, 135))
+    stats_x = screen_width - 460
+    pygame.draw.rect(screen, BLACK, (stats_x, 20, 440, 220))
     
-    bullets_text = font.render(f"Bullets Fired: R:{bullets_fired['red']} B:{bullets_fired['blue']}", True, WHITE)
-    damage_text = font.render(f"Damage Dealt: R:{damage_dealt['red']} B:{damage_dealt['blue']}", True, WHITE)
+    bullets_text = font.render(f"Bullets Fired: RED:{bullets_fired['red']} BLUE:{bullets_fired['blue']}", True, WHITE)
+    damage_text = font.render(f"Damage Dealt: RED:{damage_dealt['red']} BLUE:{damage_dealt['blue']}", True, WHITE)
     fps_text = font.render(f"FPS: {fps_display:.1f} (Speed: {game_speed}x)", True, WHITE)
     debug_text = font.render(f"Debug Mode: {'ON' if DEBUG_MODE else 'OFF'}", True, GREEN if DEBUG_MODE else RED)
     ai_text = font.render("Individual Regiment AI enabled", True, YELLOW)
     
-    screen.blit(bullets_text, (stats_x + 10, 15))
-    screen.blit(damage_text, (stats_x + 10, 40))
-    screen.blit(fps_text, (stats_x + 10, 65))
-    screen.blit(debug_text, (stats_x + 10, 90))
-    screen.blit(ai_text, (stats_x + 10, 115))
+    screen.blit(bullets_text, (stats_x + 20, 30))
+    screen.blit(damage_text, (stats_x + 20, 70))
+    screen.blit(fps_text, (stats_x + 20, 110))
+    screen.blit(debug_text, (stats_x + 20, 150))
+    screen.blit(ai_text, (stats_x + 20, 190))
 
 def draw_game_over(screen, winner, large_font, font, screen_width, screen_height):
     """Draw game over screen
@@ -167,5 +169,5 @@ large_font = None
 def init_fonts():
     """Initialize fonts for rendering"""
     global font, large_font
-    font = pygame.font.SysFont(None, 24)
-    large_font = pygame.font.SysFont(None, 48)
+    font = pygame.font.SysFont(None, 28)  # Smaller UI font to prevent overflow
+    large_font = pygame.font.SysFont(None, 72)  # Larger header font
