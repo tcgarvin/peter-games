@@ -4,10 +4,11 @@ import random
 from typing import List, Dict, Any
 
 from entities import (
-    Ship, Asteroid, Entity, 
+    Ship, Asteroid, Entity, DeliveryZone,
     SCREEN_WIDTH, SCREEN_HEIGHT, FPS, 
-    BLACK, WHITE, RED, GREEN, BLUE, YELLOW,
-    generate_random_asteroids, MAX_ASTEROIDS
+    BLACK, WHITE, RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE,
+    generate_random_asteroids, generate_random_point_away_from_entities,
+    MAX_ASTEROIDS, ZONE_SPAWN_INTERVAL, ZONE_ACTIVE_TIME
 )
 from ai import ShipAI
 
@@ -45,8 +46,21 @@ def draw_menu(screen, font, large_font, selected_option):
     instructions_rect = instructions.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT * 3 // 4))
     screen.blit(instructions, instructions_rect)
     
+    # Draw game rules
+    small_font = pygame.font.SysFont(None, 24)
+    rules = [
+        "DELIVERY GAME: Collect cargo from orange PICKUP zones",
+        "Slow down inside the zone to collect or deliver!",
+        "Deliver to purple DROPOFF zones to earn credits",
+        "Avoid asteroids and compete with other ships"
+    ]
+    
+    for i, rule in enumerate(rules):
+        rule_text = small_font.render(rule, True, WHITE)
+        screen.blit(rule_text, (SCREEN_WIDTH // 2 - 250, SCREEN_HEIGHT * 3 // 4 + 40 + i * 25))
+    
     # Draw version
-    version = font.render("v1.1", True, WHITE)
+    version = font.render("v1.2", True, WHITE)
     screen.blit(version, (20, SCREEN_HEIGHT - 30))
     
     pygame.display.flip()
@@ -72,6 +86,11 @@ def initialize_game(num_players):
     for i in range(num_players, 3):
         ships.append(Ship(ship_positions[i][0], ship_positions[i][1], random.uniform(0, 360), True))
         ship_ais.append(ShipAI(ships[-1]))
+    
+    # Ensure all ships start with no cargo and zero credits
+    for ship in ships:
+        ship.has_cargo = False
+        ship.credits = 0
     
     # Generate asteroids
     asteroids = generate_random_asteroids(10, ships)
@@ -105,6 +124,8 @@ def main():
     ships = []
     ship_ais = []
     asteroids = []
+    delivery_zones = []
+    zone_spawn_timer = 0
     game_over = False
     ship_collision_cooldown = 0
     
@@ -115,6 +136,8 @@ def main():
         running = True
         game_over = False
         ship_collision_cooldown = 0
+        delivery_zones.clear()  # Clear any existing zones
+        zone_spawn_timer = random.randint(3*FPS, 6*FPS)  # Random initial spawn time (3-6 seconds)
         
         # If we're in the menu, show it and wait for selection
         while in_menu:
@@ -155,6 +178,9 @@ def main():
                         num_players = sum(1 for ship in ships if not ship.ai_controlled)
                         ships, ship_ais, asteroids = initialize_game(num_players)
                         game_over = False
+                        # Clear delivery zones and reset spawn timer
+                        delivery_zones.clear()
+                        zone_spawn_timer = random.randint(3*FPS, 6*FPS)
                         # Reset player controls
                         for control in player_controls:
                             control['thrust'] = 0
@@ -225,7 +251,7 @@ def main():
                         other_ships = [s for s in ships if s != ship and not s.destroyed]
                         
                         # Get AI decision for this ship
-                        thrust, rotation = ship_ais[i].make_decision(asteroids, other_ships)
+                        thrust, rotation = ship_ais[i].make_decision(asteroids, other_ships, delivery_zones)
                         ship.set_controls(thrust, rotation)
                 
                 # Update all ships
@@ -254,17 +280,66 @@ def main():
                 # Add more asteroids occasionally
                 if len(asteroids) < MAX_ASTEROIDS and random.random() < 0.01:
                     asteroids.extend(generate_random_asteroids(1, ships))
+                
+                # Handle delivery zones
+                # Update existing zones
+                for zone in delivery_zones[:]:
+                    zone.update()
+                    if zone.is_expired():
+                        delivery_zones.remove(zone)
                     
-                # Check if only one ship is left or all ships are destroyed
+                    # Check for ship interactions with zones
+                    for ship in ships:
+                        if not ship.destroyed and zone.check_ship_interaction(ship):
+                            # Success sound/effect would go here
+                            pass
+                
+                # Spawn new zones if timer expired
+                zone_spawn_timer -= 1
+                if zone_spawn_timer <= 0:
+                    # Don't spawn if there are already active zones
+                    if len(delivery_zones) == 0:
+                        # Get all entities to avoid spawning too close
+                        all_entities = ships + asteroids + delivery_zones
+                        
+                        # Create pickup zone
+                        pickup_x, pickup_y = generate_random_point_away_from_entities(all_entities)
+                        pickup_zone = DeliveryZone(pickup_x, pickup_y, "pickup")
+                        delivery_zones.append(pickup_zone)
+                        
+                        # Create dropoff zone away from pickup and other entities
+                        all_entities.append(pickup_zone)
+                        dropoff_x, dropoff_y = generate_random_point_away_from_entities(all_entities, 300)
+                        dropoff_zone = DeliveryZone(dropoff_x, dropoff_y, "dropoff")
+                        delivery_zones.append(dropoff_zone)
+                    
+                    # Reset zone spawn timer
+                    zone_spawn_timer = ZONE_SPAWN_INTERVAL
+                    
+                # Check win conditions:
+                # 1. Only one ship left alive
+                # 2. All ships destroyed
+                # 3. A ship reached the credit goal (5 credits)
+                winning_ship = None
+                credit_goal = 5
+                
+                for ship in ships:
+                    if ship.credits >= credit_goal:
+                        winning_ship = ship
+                        game_over = True
+                        break
+                
                 surviving_ships = [ship for ship in ships if not ship.destroyed]
                 if len(surviving_ships) <= 1 or all(ship.destroyed for ship in ships):
                     game_over = True
-                    # Show which ship won
                     if len(surviving_ships) == 1:
-                        winner_ship = surviving_ships[0]
-                        winner_message = "Player wins!" if not winner_ship.ai_controlled else "AI wins!"
+                        winning_ship = surviving_ships[0]
             
             # Draw all entities
+            # Draw delivery zones first (so they appear behind other entities)
+            for zone in delivery_zones:
+                zone.draw(screen)
+                
             for asteroid in asteroids:
                 asteroid.draw(screen)
                 
@@ -277,10 +352,20 @@ def main():
                         i = ships.index(ship)
                         mode_text = font.render(ship_ais[i].current_mode, True, WHITE)
                         screen.blit(mode_text, (ship.x - 20, ship.y - 30))
+                        
+                    # Draw credit count above ship
+                    credit_text = font.render(f"${ship.credits}", True, YELLOW)
+                    screen.blit(credit_text, (ship.x - 10, ship.y - 40))
             
-            # Draw score and controls
-            score_text = font.render(f"Ships: {sum(1 for ship in ships if not ship.destroyed)} / {len(ships)}   Asteroids: {len(asteroids)}", True, WHITE)
+            # Draw score and game info
+            score_text = font.render(f"Ships: {sum(1 for ship in ships if not ship.destroyed)} / {len(ships)}   Asteroids: {len(asteroids)}   Goal: 5 Credits", True, WHITE)
             screen.blit(score_text, (10, 10))
+            
+            # Show delivery zone info if active
+            if delivery_zones:
+                zone_info = f"Active zones: {len([z for z in delivery_zones if z.zone_type == 'pickup'])} pickup, {len([z for z in delivery_zones if z.zone_type == 'dropoff'])} dropoff"
+                zone_text = font.render(zone_info, True, YELLOW)
+                screen.blit(zone_text, (SCREEN_WIDTH // 2 - 150, 10))
             
             # Draw controls help
             num_players = sum(1 for ship in ships if not ship.ai_controlled)
@@ -295,21 +380,20 @@ def main():
             
             # Draw game over message
             if game_over:
-                # Get surviving ships
-                surviving_ships = [ship for ship in ships if not ship.destroyed]
-                
-                if len(surviving_ships) == 1:
+                if winning_ship is not None:
                     # Show winner
-                    winner_ship = surviving_ships[0]
-                    if not winner_ship.ai_controlled:
+                    if not winning_ship.ai_controlled:
                         # Find which player won
-                        player_idx = next((idx for idx, s in enumerate(ships) if s == winner_ship and not s.ai_controlled), 0)
+                        player_idx = next((idx for idx, s in enumerate(ships) if s == winning_ship and not s.ai_controlled), 0)
                         player_num = player_idx + 1
-                        game_over_text = font.render(f"PLAYER {player_num} WINS! - Press R to restart", True, GREEN)
+                        game_over_text = font.render(f"PLAYER {player_num} WINS! Credits: ${winning_ship.credits} - Press R to restart", True, GREEN)
                     else:
-                        game_over_text = font.render("AI WINS! - Press R to restart", True, BLUE)
-                else:
+                        game_over_text = font.render(f"AI WINS! Credits: ${winning_ship.credits} - Press R to restart", True, BLUE)
+                elif len(surviving_ships) == 0:
                     # All ships destroyed
+                    game_over_text = font.render("GAME OVER - All ships destroyed - Press R to restart", True, RED)
+                else:
+                    # Backup message if no clear winner
                     game_over_text = font.render("GAME OVER - Press R to restart", True, RED)
                     
                 screen.blit(game_over_text, (SCREEN_WIDTH // 2 - 150, SCREEN_HEIGHT // 2))

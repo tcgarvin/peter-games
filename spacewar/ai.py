@@ -2,7 +2,7 @@ import math
 import random
 from typing import List, Tuple, Dict, Any
 
-from entities import Ship, Asteroid, SCREEN_WIDTH, SCREEN_HEIGHT
+from entities import Ship, Asteroid, DeliveryZone, SCREEN_WIDTH, SCREEN_HEIGHT, MAX_PICKUP_VELOCITY
 
 # AI Constants
 DANGER_DISTANCE = 100  # Distance at which asteroid is considered a threat
@@ -17,9 +17,10 @@ class ShipAI:
         self.ship = ship
         self.course_change_timer = 0
         self.current_target_angle = random.uniform(0, 360)
-        self.current_mode = "cruise"  # cruise, avoid, evade
+        self.current_mode = "cruise"  # cruise, avoid, evade, pickup, dropoff
+        self.target_zone = None
     
-    def make_decision(self, asteroids: List[Asteroid], other_ships: List[Ship]) -> Tuple[int, int]:
+    def make_decision(self, asteroids: List[Asteroid], other_ships: List[Ship], delivery_zones: List[DeliveryZone] = None) -> Tuple[int, int]:
         """
         Make a decision on ship controls based on environment
         Returns: (thrust, rotation)
@@ -36,15 +37,35 @@ class ShipAI:
         thrust = 0
         rotation = 0
         
+        # Check for delivery missions if no immediate threats
+        if delivery_zones and not dangerous_asteroids:
+            # Find appropriate zone based on ship's cargo status
+            target_type = "dropoff" if self.ship.has_cargo else "pickup"
+            suitable_zones = [z for z in delivery_zones if z.zone_type == target_type]
+            
+            if suitable_zones:
+                # Find closest zone
+                closest_zone = min(suitable_zones, key=lambda z: self.ship.get_distance(z))
+                distance_to_zone = self.ship.get_distance(closest_zone)
+                
+                if distance_to_zone < REACTION_DISTANCE * 3:
+                    self.current_mode = target_type
+                    self.target_zone = closest_zone
+                    thrust, rotation = self._approach_zone(closest_zone)
+                    return thrust, rotation
+        
         # Update mode based on threats
         if dangerous_asteroids:
             self.current_mode = "evade"
+            self.target_zone = None
         elif closest_asteroid and distance_to_closest < REACTION_DISTANCE:
             self.current_mode = "avoid"
+            self.target_zone = None
         else:
             # No immediate threats, cruise around
-            if self.course_change_timer == 0:
+            if self.course_change_timer == 0 and self.current_mode not in ["pickup", "dropoff"]:
                 self.current_mode = "cruise"
+                self.target_zone = None
                 # Set a new random target angle occasionally
                 if random.random() < 0.01:
                     self.current_target_angle = random.uniform(0, 360)
@@ -55,6 +76,8 @@ class ShipAI:
             thrust, rotation = self._evade_asteroids(dangerous_asteroids)
         elif self.current_mode == "avoid":
             thrust, rotation = self._avoid_asteroid(closest_asteroid)
+        elif self.current_mode in ["pickup", "dropoff"] and self.target_zone:
+            thrust, rotation = self._approach_zone(self.target_zone)
         else:  # cruise mode
             thrust, rotation = self._cruise(asteroids)
         
@@ -197,6 +220,51 @@ class ShipAI:
         thrust = 1 if thrust_intensity > 0.3 else 0
         
         if abs(angle_diff) < 15:  # Close enough to desired angle
+            rotation = 0
+        elif angle_diff > 0:
+            rotation = 1
+        else:
+            rotation = -1
+            
+        return thrust, rotation
+    
+    def _approach_zone(self, zone: DeliveryZone) -> Tuple[int, int]:
+        """Approach a delivery zone and slow down when close"""
+        # Calculate angle to zone
+        angle_to_zone = math.degrees(math.atan2(zone.y - self.ship.y, zone.x - self.ship.x)) % 360
+        
+        # Determine rotation direction
+        ship_angle = self.ship.angle % 360
+        angle_diff = (angle_to_zone - ship_angle + 180) % 360 - 180
+        
+        # Calculate distance and current speed
+        distance = self.ship.get_distance(zone)
+        current_speed = math.sqrt(self.ship.velocity_x**2 + self.ship.velocity_y**2)
+        
+        # Set controls based on distance and speed
+        if distance < zone.size:
+            # Inside zone, slow down
+            if current_speed > MAX_PICKUP_VELOCITY * 0.8:
+                # Need to brake - thrust in opposite direction
+                thrust_angle = (ship_angle + 180) % 360
+                angle_to_thrust = (thrust_angle - angle_to_zone + 180) % 360 - 180
+                
+                # Only thrust if pointing in a good direction for braking
+                thrust = 1 if abs(angle_to_thrust) < 30 else 0
+            else:
+                # Slow enough for pickup/dropoff
+                thrust = 0
+        else:
+            # Approaching zone
+            if distance < zone.size * 2 and current_speed > MAX_PICKUP_VELOCITY:
+                # Getting close, start slowing down
+                thrust = 0
+            else:
+                # Far away, full speed ahead
+                thrust = 1 if abs(angle_diff) < 45 else 0
+        
+        # Set rotation
+        if abs(angle_diff) < 5:  # Close enough to desired angle
             rotation = 0
         elif angle_diff > 0:
             rotation = 1

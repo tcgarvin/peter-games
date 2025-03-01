@@ -10,6 +10,8 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
+ORANGE = (255, 165, 0)
+PURPLE = (128, 0, 128)
 
 # Game constants
 SCREEN_WIDTH = 1600
@@ -31,6 +33,13 @@ ASTEROID_SIZES = {
 }
 ASTEROID_SPEED_RANGE = (0.5, 2.0)
 MAX_ASTEROIDS = 15
+
+# Delivery game constants
+ZONE_SIZE = 60
+ZONE_SPAWN_INTERVAL = 10 * FPS  # 10 seconds in frames
+MAX_PICKUP_VELOCITY = 1.0  # Maximum velocity for successful pickup/dropoff
+ZONE_ACTIVE_TIME = 20 * FPS  # 20 seconds in frames
+INTERACTION_COOLDOWN = 1 * FPS  # 1 second cooldown between interactions
 
 class Entity:
     """Base class for all game entities"""
@@ -85,6 +94,9 @@ class Ship(Entity):
         self.thrust = 0  # Current thrust: 0 (none) or 1 (thrusting)
         self.ai_controlled = ai_controlled
         self.color = BLUE if ai_controlled else GREEN
+        self.has_cargo = False
+        self.credits = 0
+        self.interaction_cooldown = 0  # Cooldown timer for zone interactions
     
     def update(self):
         """Update ship position and velocity"""
@@ -118,6 +130,10 @@ class Ship(Entity):
         
         # Check boundaries
         self.check_boundary()
+        
+        # Update interaction cooldown
+        if self.interaction_cooldown > 0:
+            self.interaction_cooldown -= 1
     
     def draw(self, screen: pygame.Surface):
         """Draw the ship as a triangle pointing in its direction"""
@@ -141,6 +157,10 @@ class Ship(Entity):
         # Draw the ship
         points = [(front_x, front_y), (back_left_x, back_left_y), (back_right_x, back_right_y)]
         pygame.draw.polygon(screen, self.color, points)
+        
+        # Draw cargo dot if ship has cargo
+        if self.has_cargo:
+            pygame.draw.circle(screen, RED, (int(self.x), int(self.y)), 5)
         
         # Draw thrust if active
         if self.thrust:
@@ -240,31 +260,105 @@ class Asteroid(Entity):
         return new_asteroids
 
 
+class DeliveryZone(Entity):
+    """Base class for delivery zones (pickup and dropoff)"""
+    
+    def __init__(self, x: float, y: float, zone_type: str):
+        super().__init__(x, y, ZONE_SIZE)
+        self.zone_type = zone_type  # "pickup" or "dropoff"
+        self.active_time = ZONE_ACTIVE_TIME
+        self.color = ORANGE if zone_type == "pickup" else PURPLE
+        
+    def update(self):
+        """Update zone active time"""
+        self.active_time -= 1
+        
+    def is_expired(self):
+        """Check if zone has expired"""
+        return self.active_time <= 0
+        
+    def draw(self, screen: pygame.Surface):
+        """Draw the zone as a circle with pulsating outline"""
+        # Draw filled circle with transparency
+        s = pygame.Surface((ZONE_SIZE * 2, ZONE_SIZE * 2), pygame.SRCALPHA)
+        pygame.draw.circle(s, (*self.color, 40), (ZONE_SIZE, ZONE_SIZE), ZONE_SIZE)
+        screen.blit(s, (self.x - ZONE_SIZE, self.y - ZONE_SIZE))
+        
+        # Draw pulsating outline
+        pulse = abs(math.sin(pygame.time.get_ticks() / 200))
+        outline_thickness = max(2, int(4 * pulse))
+        pygame.draw.circle(screen, self.color, (int(self.x), int(self.y)), 
+                           ZONE_SIZE, outline_thickness)
+        
+        # Draw zone label
+        font = pygame.font.SysFont(None, 24)
+        label = "PICKUP" if self.zone_type == "pickup" else "DROPOFF"
+        text = font.render(label, True, WHITE)
+        text_rect = text.get_rect(center=(self.x, self.y))
+        screen.blit(text, text_rect)
+        
+    def check_ship_interaction(self, ship: Ship) -> bool:
+        """Check if ship can interact with this zone"""
+        # Check if ship is in zone
+        if not self.is_colliding(ship):
+            return False
+            
+        # Check if ship is moving slow enough
+        ship_speed = math.sqrt(ship.velocity_x**2 + ship.velocity_y**2)
+        if ship_speed > MAX_PICKUP_VELOCITY:
+            return False
+            
+        # Check if ship is on cooldown
+        if ship.interaction_cooldown > 0:
+            return False
+            
+        # Check if interaction is valid based on zone type and ship cargo state
+        if self.zone_type == "pickup" and not ship.has_cargo:
+            ship.has_cargo = True
+            ship.interaction_cooldown = INTERACTION_COOLDOWN
+            return True
+        elif self.zone_type == "dropoff" and ship.has_cargo:
+            ship.has_cargo = False
+            ship.credits += 1
+            ship.interaction_cooldown = INTERACTION_COOLDOWN
+            return True
+            
+        return False
+
+
+def generate_random_point_away_from_entities(entities: List[Entity], min_distance: float = 100) -> Tuple[float, float]:
+    """Generate a random point that's not too close to any entities"""
+    for _ in range(100):  # Try up to 100 times
+        x = random.uniform(0, SCREEN_WIDTH)
+        y = random.uniform(0, SCREEN_HEIGHT)
+        
+        # Check distance from all entities
+        too_close = False
+        for entity in entities:
+            # Calculate distance considering screen wrap
+            dx = min(abs(x - entity.x), SCREEN_WIDTH - abs(x - entity.x))
+            dy = min(abs(y - entity.y), SCREEN_HEIGHT - abs(y - entity.y))
+            distance = math.sqrt(dx**2 + dy**2)
+            
+            # Check if too close
+            if distance < min_distance:
+                too_close = True
+                break
+        
+        if not too_close:
+            return x, y
+            
+    # Fallback if we can't find a good position
+    return random.uniform(0, SCREEN_WIDTH), random.uniform(0, SCREEN_HEIGHT)
+
+
 def generate_random_asteroids(num_asteroids: int, ships: List[Ship]) -> List[Asteroid]:
     """Generate random asteroids away from ships"""
     asteroids = []
     
     for _ in range(num_asteroids):
-        # Keep trying positions until we find one that's not too close to ships
-        while True:
-            x = random.uniform(0, SCREEN_WIDTH)
-            y = random.uniform(0, SCREEN_HEIGHT)
-            
-            # Check distance from all ships
-            too_close = False
-            for ship in ships:
-                # Calculate distance considering screen wrap
-                dx = min(abs(x - ship.x), SCREEN_WIDTH - abs(x - ship.x))
-                dy = min(abs(y - ship.y), SCREEN_HEIGHT - abs(y - ship.y))
-                distance = math.sqrt(dx**2 + dy**2)
-                
-                # Ensure asteroids don't spawn too close to ships
-                if distance < 100:  # Safe distance
-                    too_close = True
-                    break
-            
-            if not too_close:
-                break
+        # Get position away from ships
+        x, y = generate_random_point_away_from_entities(ships)
         
         # Choose random size with weighted probability
         size_category = random.choices(
