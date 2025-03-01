@@ -7,9 +7,12 @@ Each game in this repository is a standalone project. All commands should be run
 For each game directory:
 - Install dependencies: `cd [game-dir] && uv add pygame` (no need to run `uv venv` or `uv pip install`)
 - Run games:
-  - Flappy Bird: `cd flappy2 && uv run python flappy_2player.py`
-  - Monster Slicing: `cd slicing && uv run python run_game.py`
-  - Snake: `cd snake && uv run python snake.py`
+  - Flappy Bird: `cd flappy2 && uv run python flappy_2player.py &`
+  - Monster Slicing: `cd slicing && uv run python run_game.py &`
+  - Snake: `cd snake && uv run python snake.py &`
+  - Spacewar: `cd spacewar && uv run python spacewar.py &`
+  
+Note: Always run games in the background (with &), not the foreground. No need to pkill in advance.
 
 ## Code Style Guidelines
 - **Imports**: Standard library first, then third-party packages

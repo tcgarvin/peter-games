@@ -12,8 +12,8 @@ BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
 
 # Game constants
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1600
+SCREEN_HEIGHT = 1200
 FPS = 60
 
 # Ship constants
@@ -178,7 +178,7 @@ class Asteroid(Entity):
         
         # Rotation
         self.rotation_angle = 0
-        self.rotation_speed = random.uniform(-1, 1)
+        self.rotation_speed = random.uniform(-0.2, 0.2)
         
         # Create irregular shape
         self.vertices = []
