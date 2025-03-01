@@ -10,8 +10,10 @@ class Renderer:
     def __init__(self):
         self.screen = None
         self.attack_effects = []  # [(x, y, radius, time_remaining), ...]
-        # Create a structured maze with paths to the center
-        self.obstacles = self.generate_maze()
+        # Generate maze using the new procedural generator
+        from maze_generator import MazeGenerator
+        maze_gen = MazeGenerator()
+        self.obstacles, self.entrances = maze_gen.generate_maze()
         
     def init_screen(self):
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -57,73 +59,6 @@ class Renderer:
         # Add a new attack effect
         self.attack_effects.append((x, y, radius, color, 200))  # 200ms duration
         
-    def generate_maze(self):
-        """Generate a simple maze with multiple paths to the center"""
-        obstacles = []
-        
-        # Define center area to keep clear for objective (circle in middle)
-        center_x, center_y = SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2
-        center_radius = OBJECTIVE_RADIUS + 50  # Give some space around objective
-        
-        # Create outer walls with entrances
-        wall_thickness = 20
-        
-        # Top wall with entrance
-        obstacles.append((0, 0, SCREEN_WIDTH // 3 - 50, wall_thickness))  # Left section
-        obstacles.append((SCREEN_WIDTH // 3 + 50, 0, 2 * SCREEN_WIDTH // 3 - 50, wall_thickness))  # Right section
-        
-        # Bottom wall with entrance
-        obstacles.append((0, SCREEN_HEIGHT - wall_thickness, 2 * SCREEN_WIDTH // 3 - 50, wall_thickness))  # Left section
-        obstacles.append((2 * SCREEN_WIDTH // 3 + 50, SCREEN_HEIGHT - wall_thickness, SCREEN_WIDTH // 3 - 50, wall_thickness))  # Right section
-        
-        # Left wall with entrance
-        obstacles.append((0, 0, wall_thickness, SCREEN_HEIGHT // 3 - 50))  # Top section
-        obstacles.append((0, SCREEN_HEIGHT // 3 + 50, wall_thickness, 2 * SCREEN_HEIGHT // 3))  # Bottom section
-        
-        # Right wall with entrance
-        obstacles.append((SCREEN_WIDTH - wall_thickness, 0, wall_thickness, 2 * SCREEN_HEIGHT // 3 - 50))  # Top section
-        obstacles.append((SCREEN_WIDTH - wall_thickness, 2 * SCREEN_HEIGHT // 3 + 50, wall_thickness, SCREEN_HEIGHT // 3 - 50))  # Bottom section
-        
-        # Inner walls creating paths
-        # These walls create a simple maze pattern but ensure all paths lead to center
-        
-        # North quadrant barriers
-        obstacles.append((SCREEN_WIDTH // 4, SCREEN_HEIGHT // 5, SCREEN_WIDTH // 2, wall_thickness))
-        obstacles.append((SCREEN_WIDTH // 4, SCREEN_HEIGHT // 5, wall_thickness, SCREEN_HEIGHT // 5))
-        
-        # East quadrant barriers
-        obstacles.append((SCREEN_WIDTH // 5 * 3, SCREEN_HEIGHT // 4, SCREEN_WIDTH // 5, wall_thickness))
-        obstacles.append((SCREEN_WIDTH // 5 * 3, SCREEN_HEIGHT // 4, wall_thickness, SCREEN_HEIGHT // 4))
-        
-        # South quadrant barriers
-        obstacles.append((SCREEN_WIDTH // 4, SCREEN_HEIGHT // 5 * 3, SCREEN_WIDTH // 3, wall_thickness))
-        obstacles.append((SCREEN_WIDTH // 5 * 3, SCREEN_HEIGHT // 5 * 3, wall_thickness, SCREEN_HEIGHT // 5))
-        
-        # West quadrant barriers
-        obstacles.append((SCREEN_WIDTH // 5, SCREEN_HEIGHT // 3, wall_thickness, SCREEN_HEIGHT // 3))
-        obstacles.append((SCREEN_WIDTH // 5, SCREEN_HEIGHT // 3 * 2, SCREEN_WIDTH // 5, wall_thickness))
-        
-        # Filter out any obstacles that might overlap with the center
-        filtered_obstacles = []
-        for ox, oy, width, height in obstacles:
-            # Check corners of obstacle for overlap with center
-            corners = [(ox, oy), (ox + width, oy), (ox, oy + height), (ox + width, oy + height)]
-            overlap = False
-            
-            for cx, cy in corners:
-                distance = math.sqrt((cx - center_x)**2 + (cy - center_y)**2)
-                if distance < center_radius:
-                    overlap = True
-                    break
-                    
-            # Also check if center is inside obstacle
-            if (ox <= center_x <= ox + width and oy <= center_y <= oy + height):
-                overlap = True
-                
-            if not overlap:
-                filtered_obstacles.append((ox, oy, width, height))
-                
-        return filtered_obstacles
         
     def draw_map(self):
         # Draw fixed obstacles only (no border to avoid trapping enemies)

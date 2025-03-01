@@ -17,12 +17,7 @@ class GameState:
         self.wave_timer = 0
         self.game_over = False
         self.wave_in_progress = False
-        self.spawn_points = [
-            (0, 0),  # Top-left
-            (SCREEN_WIDTH, 0),  # Top-right
-            (0, SCREEN_HEIGHT),  # Bottom-left
-            (SCREEN_WIDTH, SCREEN_HEIGHT)  # Bottom-right
-        ]
+        self.renderer = None  # Will be set by main.py
         
     def add_player(self, player):
         self.players.append(player)
@@ -72,6 +67,19 @@ class GameState:
         if not self.wave_in_progress and current_time >= self.wave_timer:
             self.start_new_wave()
             
+    def get_entrances(self):
+        """Get the entrance points from the renderer"""
+        if self.renderer:
+            return self.renderer.entrances
+        else:
+            # Fallback if renderer not set
+            return [
+                (SCREEN_WIDTH // 3, 30),  # Top entrance
+                (SCREEN_WIDTH - 30, 2 * SCREEN_HEIGHT // 3),  # Right entrance
+                (2 * SCREEN_WIDTH // 3, SCREEN_HEIGHT - 30),  # Bottom entrance
+                (30, SCREEN_HEIGHT // 3)  # Left entrance
+            ]
+    
     def start_new_wave(self):
         self.wave_number += 1
         self.wave_in_progress = True
@@ -86,13 +94,8 @@ class GameState:
         if self.wave_number >= 5:
             enemy_types.append("tank")
         
-        # Define valid spawn areas (at maze entrances)
-        valid_spawns = [
-            (SCREEN_WIDTH // 3, 30),  # Top entrance
-            (SCREEN_WIDTH - 30, 2 * SCREEN_HEIGHT // 3),  # Right entrance
-            (2 * SCREEN_WIDTH // 3, SCREEN_HEIGHT - 30),  # Bottom entrance
-            (30, SCREEN_HEIGHT // 3)  # Left entrance
-        ]
+        # Get maze entrances from renderer
+        valid_spawns = self.get_entrances()
             
         # Spawn enemies in valid areas
         for _ in range(num_enemies):
@@ -100,8 +103,8 @@ class GameState:
             enemy_type = random.choice(enemy_types)
             
             # Add some randomness to spawn position
-            spawn_x = spawn_point[0] + random.randint(-30, 30)
-            spawn_y = spawn_point[1] + random.randint(-30, 30)
+            spawn_x = spawn_point[0] + random.randint(-15, 15)
+            spawn_y = spawn_point[1] + random.randint(-15, 15)
             
             # Ensure spawn point is within screen bounds but away from borders
             spawn_x = max(30, min(SCREEN_WIDTH - 30, spawn_x))

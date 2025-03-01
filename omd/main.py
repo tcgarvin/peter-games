@@ -70,6 +70,7 @@ def main():
     
     # Game state
     game_state = GameState()
+    game_state.renderer = renderer
     
     # Create players with safe starting positions
     def find_safe_position(radius, obstacles, x_pref, y_pref):
