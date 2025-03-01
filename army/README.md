@@ -15,7 +15,8 @@ Two AI opponents command three regiments each (red vs. blue). The AI players man
 
 ## Controls & Features
 
-- **ESC**: Quit the game
+- **Q/ESC**: Quit the game
+- **D**: Toggle debug mode (shows aiming/reloading status)
 - **SPACE**: Restart after game over
 - **1/2/3**: Change simulation speed (1x, 2x, 3x)
 

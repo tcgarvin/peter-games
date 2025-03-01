@@ -50,6 +50,9 @@ clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 24)
 large_font = pygame.font.SysFont(None, 48)
 
+# Debug settings
+DEBUG_MODE = False  # Debug info off by default
+
 class Bullet:
     def __init__(self, x, y, angle, team, delay=0):
         self.x = x
@@ -234,24 +237,25 @@ class Regiment:
             health_color = RED
         pygame.draw.rect(screen, health_color, (health_x, health_y, health_fill, health_height))
         
-        # Show status indicators
-        status_y = int(center_y - self.height - 20)
-        
-        # Show "ready" indicator when regiment can fire
-        if self.can_fire():
-            ready_text = font.render("READY", True, GREEN)
-            screen.blit(ready_text, (health_x, status_y))
-        
-        # Show "aiming" indicator when setting up to fire
-        elif self.stationary_time > 0 and self.stationary_time < SETUP_TIME:
-            aiming_progress = self.stationary_time / SETUP_TIME
-            aim_text = font.render(f"AIMING {int(aiming_progress * 100)}%", True, YELLOW)
-            screen.blit(aim_text, (health_x - 15, status_y))
-        
-        # Show "reloading" indicator during cooldown
-        elif self.cooldown > 0:
-            reload_text = font.render("RELOADING", True, YELLOW)
-            screen.blit(reload_text, (health_x - 10, status_y))
+        # Show status indicators only in debug mode
+        if DEBUG_MODE:
+            status_y = int(center_y - self.height - 20)
+            
+            # Show "ready" indicator when regiment can fire
+            if self.can_fire():
+                ready_text = font.render("READY", True, GREEN)
+                screen.blit(ready_text, (health_x, status_y))
+            
+            # Show "aiming" indicator when setting up to fire
+            elif self.stationary_time > 0 and self.stationary_time < SETUP_TIME:
+                aiming_progress = self.stationary_time / SETUP_TIME
+                aim_text = font.render(f"AIMING {int(aiming_progress * 100)}%", True, YELLOW)
+                screen.blit(aim_text, (health_x - 15, status_y))
+            
+            # Show "reloading" indicator during cooldown
+            elif self.cooldown > 0:
+                reload_text = font.render("RELOADING", True, YELLOW)
+                screen.blit(reload_text, (health_x - 10, status_y))
     
     def get_corners(self):
         """Get the four corners of the rotated rectangle"""
@@ -449,6 +453,8 @@ def initialize_game():
 
 def main():
     """Main game function"""
+    global DEBUG_MODE
+    
     running = True
     game_over = False
     winner = None
@@ -477,7 +483,8 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
+                if event.key == pygame.K_ESCAPE or event.key == pygame.K_q:
+                    # Quit with ESC or Q
                     running = False
                 elif event.key == pygame.K_SPACE:
                     # Reset game
@@ -487,6 +494,10 @@ def main():
                         winner = None
                         bullets_fired = {"red": 0, "blue": 0}
                         damage_dealt = {"red": 0, "blue": 0}
+                elif event.key == pygame.K_d:
+                    # Toggle debug mode with D key
+                    DEBUG_MODE = not DEBUG_MODE
+                    print(f"Debug mode: {'ON' if DEBUG_MODE else 'OFF'}")
                 elif event.key == pygame.K_1:
                     game_speed = 1
                 elif event.key == pygame.K_2:
@@ -591,18 +602,35 @@ def main():
         blue_text = font.render(f"Blue Team: {blue_alive}/3 alive", True, WHITE)
         screen.blit(blue_text, (40, 40))
         
+        # Controls info at bottom left
+        controls_y = SCREEN_HEIGHT - 80
+        pygame.draw.rect(screen, BLACK, (10, controls_y, 220, 70))
+        
+        controls_title = font.render("Controls:", True, WHITE)
+        screen.blit(controls_title, (15, controls_y + 5))
+        
+        controls_text1 = font.render("Q/ESC: Quit", True, WHITE)
+        controls_text2 = font.render("D: Toggle Debug Info", True, WHITE)
+        controls_text3 = font.render("1/2/3: Set Speed", True, WHITE)
+        
+        screen.blit(controls_text1, (15, controls_y + 25))
+        screen.blit(controls_text2, (15, controls_y + 45))
+        screen.blit(controls_text3, (15, controls_y + 65))
+        
         # Stats box
         stats_x = SCREEN_WIDTH - 230
-        pygame.draw.rect(screen, BLACK, (stats_x, 10, 220, 90))
+        pygame.draw.rect(screen, BLACK, (stats_x, 10, 220, 110))
         
         # Stats text
         bullets_text = font.render(f"Bullets Fired: R:{bullets_fired['red']} B:{bullets_fired['blue']}", True, WHITE)
         damage_text = font.render(f"Damage Dealt: R:{damage_dealt['red']} B:{damage_dealt['blue']}", True, WHITE)
         fps_text = font.render(f"FPS: {fps_display:.1f} (Speed: {game_speed}x)", True, WHITE)
+        debug_text = font.render(f"Debug Mode: {'ON' if DEBUG_MODE else 'OFF'}", True, GREEN if DEBUG_MODE else RED)
         
         screen.blit(bullets_text, (stats_x + 10, 15))
         screen.blit(damage_text, (stats_x + 10, 40))
         screen.blit(fps_text, (stats_x + 10, 65))
+        screen.blit(debug_text, (stats_x + 10, 90))
         
         # Game over screen
         if game_over:
