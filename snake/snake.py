@@ -166,14 +166,17 @@ def choose_mode(screen, clock, font):
         screen.fill(BG_COLOR)
         title_text = font.render("Choose Mode", True, (255, 255, 255))
         single_text = font.render("Press 1 for Single Player", True, (255, 255, 255))
-        two_text = font.render("Press 2 for Two Player", True, (255, 255, 255))
-        three_text = font.render("Press 3 for Three Player", True, (255, 255, 255))
-        bot_text = font.render("Press 4 for 2 Players + AI Bot", True, (255, 255, 255))
+        single_ai_text = font.render("Press 2 for Single Player vs AI", True, (255, 255, 255))
+        two_text = font.render("Press 3 for Two Player", True, (255, 255, 255))
+        three_text = font.render("Press 4 for Three Player", True, (255, 255, 255))
+        bot_text = font.render("Press 5 for 2 Players + AI Bot", True, (255, 255, 255))
+        
         screen.blit(title_text, title_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 200)))
-        screen.blit(single_text, single_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)))
-        screen.blit(two_text, two_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)))
-        screen.blit(three_text, three_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)))
-        screen.blit(bot_text, bot_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50)))
+        screen.blit(single_text, single_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 125)))
+        screen.blit(single_ai_text, single_ai_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 75)))
+        screen.blit(two_text, two_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 25)))
+        screen.blit(three_text, three_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 25)))
+        screen.blit(bot_text, bot_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 75)))
         pygame.display.flip()
 
         for event in pygame.event.get():
@@ -189,6 +192,8 @@ def choose_mode(screen, clock, font):
                     return 3
                 elif event.key == pygame.K_4:
                     return 4
+                elif event.key == pygame.K_5:
+                    return 5
         clock.tick(10)
 
 
@@ -211,6 +216,14 @@ def main():
             while len(foods) < MAX_FOOD:
                 foods.append(get_random_food_position_single(player, foods))
         elif mode == 2:
+            # Single player vs AI mode: Player uses arrow keys, AI is autonomous.
+            player = Snake(BLUE, (5, GRID_HEIGHT // 2), (1, 0), PLAYER2_CONTROLS, name="Player")
+            ai = Snake(ORANGE, (GRID_WIDTH - 6, GRID_HEIGHT // 2), (-1, 0), {}, name="AI")
+            players.extend([player, ai])
+            foods = []
+            while len(foods) < MAX_FOOD:
+                foods.append(get_random_food_position_multi(players, foods))
+        elif mode == 3:
             # Two player mode: Player 1 uses WASD, Player 2 uses arrow keys.
             player1 = Snake(BLUE, (5, GRID_HEIGHT // 2), (1, 0), PLAYER1_CONTROLS, name="Player 1")
             player2 = Snake(ORANGE, (GRID_WIDTH - 6, GRID_HEIGHT // 2), (-1, 0), PLAYER2_CONTROLS, name="Player 2")
@@ -218,7 +231,7 @@ def main():
             foods = []
             while len(foods) < MAX_FOOD:
                 foods.append(get_random_food_position_multi(players, foods))
-        elif mode == 3:
+        elif mode == 4:
             # Three player mode: Three human players.
             player1 = Snake(BLUE, (5, GRID_HEIGHT // 2), (1, 0), PLAYER1_CONTROLS, name="Player 1")
             player2 = Snake(ORANGE, (GRID_WIDTH - 6, GRID_HEIGHT // 2), (-1, 0), PLAYER2_CONTROLS, name="Player 2")
@@ -227,7 +240,7 @@ def main():
             foods = []
             while len(foods) < MAX_FOOD:
                 foods.append(get_random_food_position_multi(players, foods))
-        elif mode == 4:
+        elif mode == 5:
             # 2 Players + AI Bot.
             player1 = Snake(BLUE, (5, GRID_HEIGHT // 2), (1, 0), PLAYER1_CONTROLS, name="Player 1")
             player2 = Snake(ORANGE, (GRID_WIDTH - 6, GRID_HEIGHT // 2), (-1, 0), PLAYER2_CONTROLS, name="Player 2")
@@ -247,18 +260,36 @@ def main():
                     return
                 if event.type == pygame.KEYDOWN:
                     # For human-controlled snakes only.
-                    if mode in (1, 2, 3):
+                    if mode == 1:
+                        # Single player mode
                         for snake in players:
                             if snake.controls and event.key in snake.controls:
                                 snake.change_direction(event.key)
-                    elif mode == 4:
+                    elif mode == 2:
+                        # Single player vs AI
+                        for snake in players:
+                            if snake.name != "AI" and snake.controls and event.key in snake.controls:
+                                snake.change_direction(event.key)
+                    elif mode in (3, 4):
+                        # Two or three player modes (all human)
+                        for snake in players:
+                            if snake.controls and event.key in snake.controls:
+                                snake.change_direction(event.key)
+                    elif mode == 5:
                         # For 2 players + Bot, process human keys.
                         for snake in players:
                             if snake.name != "Bot" and snake.controls and event.key in snake.controls:
                                 snake.change_direction(event.key)
 
-            # For mode 4, update bot decision.
-            if mode == 4:
+            # Update AI decisions for modes with AI players
+            if mode == 2:
+                # Single player vs AI mode
+                for snake in players:
+                    if snake.name == "AI" and snake.alive:
+                        new_dir = bot_decision(snake, foods, players)
+                        snake.direction = new_dir
+            elif mode == 5:
+                # 2 Players + Bot mode
                 for snake in players:
                     if snake.name == "Bot" and snake.alive:
                         new_dir = bot_decision(snake, foods, players)
