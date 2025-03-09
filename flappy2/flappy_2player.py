@@ -22,6 +22,7 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 YELLOW = (255, 255, 0)
+PURPLE = (128, 0, 128)  # Added for third player
 
 # Set up the display
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -315,20 +316,27 @@ class Pipe:
         # Draw bottom pipe
         pygame.draw.rect(screen, GREEN, (self.x, self.height + PIPE_GAP, self.width, HEIGHT - self.height - PIPE_GAP))
 
-def show_score(birds, mode="two_player"):
+def show_score(birds, mode="three_player"):
     pause_text = font.render("Press P to Pause", True, YELLOW)
     screen.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, 10))
     
     if mode == "single":
         score_text = font.render(f"Score: {birds[0].score}", True, RED)
         screen.blit(score_text, (10, 10))
-    else:
+    elif mode == "two_player":
         score_text1 = font.render(f"Player 1: {birds[0].score}", True, RED)
         score_text2 = font.render(f"Player 2: {birds[1].score}", True, BLUE)
         screen.blit(score_text1, (10, 10))
         screen.blit(score_text2, (WIDTH - 150, 10))
+    else:  # three_player
+        score_text1 = font.render(f"P1: {birds[0].score}", True, RED)
+        score_text2 = font.render(f"P2: {birds[1].score}", True, BLUE)
+        score_text3 = font.render(f"P3: {birds[2].score}", True, PURPLE)
+        screen.blit(score_text1, (10, 10))
+        screen.blit(score_text2, (WIDTH // 2 - 50, 10))
+        screen.blit(score_text3, (WIDTH - 100, 10))
 
-def game_over_screen(birds, mode="two_player"):
+def game_over_screen(birds, mode="three_player"):
     screen.fill(BLACK)
     
     title_font = pygame.font.SysFont(None, 64)
@@ -346,7 +354,7 @@ def game_over_screen(birds, mode="two_player"):
         screen.blit(result_text, (WIDTH // 2 - result_text.get_width() // 2, HEIGHT // 2 - 100))
         screen.blit(subtitle_text, (WIDTH // 2 - subtitle_text.get_width() // 2, HEIGHT // 2 - 50))
         screen.blit(restart_text, (WIDTH // 2 - restart_text.get_width() // 2, HEIGHT // 2 + 50))
-    else:
+    elif mode == "two_player":
         # Determine the winner (the one who's still alive or who scored more if both crashed)
         if birds[0].alive and not birds[1].alive:
             result = "Player 1 Wins!"
@@ -380,6 +388,44 @@ def game_over_screen(birds, mode="two_player"):
         screen.blit(subtitle_text, (WIDTH // 2 - subtitle_text.get_width() // 2, HEIGHT // 2 - 50))
         screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, HEIGHT // 2))
         screen.blit(restart_text, (WIDTH // 2 - restart_text.get_width() // 2, HEIGHT // 2 + 50))
+    else:  # three_player
+        # Determine the winner
+        alive_count = sum(1 for bird in birds if bird.alive)
+        
+        if alive_count == 1:
+            # One player is still alive
+            winner_idx = next(i for i, bird in enumerate(birds) if bird.alive)
+            player_colors = [RED, BLUE, PURPLE]
+            result = f"Player {winner_idx + 1} Wins!"
+            subtitle = "Last bird flying!"
+            color = player_colors[winner_idx]
+        else:
+            # All crashed or multiple alive, check scores
+            max_score = max(bird.score for bird in birds)
+            winners = [i for i, bird in enumerate(birds) if bird.score == max_score]
+            
+            if len(winners) == 1:
+                # Clear winner by score
+                winner_idx = winners[0]
+                player_colors = [RED, BLUE, PURPLE]
+                result = f"Player {winner_idx + 1} Wins!"
+                subtitle = "Most points scored!"
+                color = player_colors[winner_idx]
+            else:
+                # Tie between multiple players
+                result = "It's a Tie!"
+                subtitle = f"Between Players {', '.join(str(w+1) for w in winners)}!"
+                color = WHITE
+        
+        result_text = title_font.render(result, True, color)
+        subtitle_text = subtitle_font.render(subtitle, True, color)
+        score_text = font.render(f"P1: {birds[0].score} - P2: {birds[1].score} - P3: {birds[2].score}", True, WHITE)
+        restart_text = font.render("Press R to Restart or Q to Quit", True, YELLOW)
+        
+        screen.blit(result_text, (WIDTH // 2 - result_text.get_width() // 2, HEIGHT // 2 - 100))
+        screen.blit(subtitle_text, (WIDTH // 2 - subtitle_text.get_width() // 2, HEIGHT // 2 - 50))
+        screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, HEIGHT // 2))
+        screen.blit(restart_text, (WIDTH // 2 - restart_text.get_width() // 2, HEIGHT // 2 + 50))
     
     pygame.display.update()
 
@@ -395,12 +441,14 @@ def show_game_mode_selection():
     mode_font = pygame.font.SysFont(None, 48)
     one_player_text = mode_font.render("1. Single Player", True, YELLOW)
     two_player_text = mode_font.render("2. Two Players", True, YELLOW)
+    three_player_text = mode_font.render("3. Three Players", True, YELLOW)
     
-    screen.blit(one_player_text, (WIDTH // 2 - one_player_text.get_width() // 2, HEIGHT // 2 - 30))
-    screen.blit(two_player_text, (WIDTH // 2 - two_player_text.get_width() // 2, HEIGHT // 2 + 30))
+    screen.blit(one_player_text, (WIDTH // 2 - one_player_text.get_width() // 2, HEIGHT // 2 - 60))
+    screen.blit(two_player_text, (WIDTH // 2 - two_player_text.get_width() // 2, HEIGHT // 2))
+    screen.blit(three_player_text, (WIDTH // 2 - three_player_text.get_width() // 2, HEIGHT // 2 + 60))
     
     instruction_font = pygame.font.SysFont(None, 36)
-    instruction_text = instruction_font.render("Press 1 or 2 to select mode", True, WHITE)
+    instruction_text = instruction_font.render("Press 1, 2, or 3 to select mode", True, WHITE)
     screen.blit(instruction_text, (WIDTH // 2 - instruction_text.get_width() // 2, HEIGHT * 3 // 4))
     
     pygame.display.update()
@@ -419,6 +467,9 @@ def show_game_mode_selection():
                     waiting = False
                 elif event.key == pygame.K_2:
                     mode = "two_player"
+                    waiting = False
+                elif event.key == pygame.K_3:
+                    mode = "three_player"
                     waiting = False
         clock.tick(60)
     
@@ -441,7 +492,7 @@ def show_start_screen(mode):
         
         screen.blit(player_text, (WIDTH // 2 - player_text.get_width() // 2, HEIGHT // 2))
         screen.blit(player_control, (WIDTH // 2 - player_control.get_width() // 2, HEIGHT // 2 + 40))
-    else:
+    elif mode == "two_player":
         player1_text = controls_font.render("Player 1 (Red Bird)", True, RED)
         player1_control = controls_font.render("Press W to flap", True, WHITE)
         
@@ -453,9 +504,27 @@ def show_start_screen(mode):
         
         screen.blit(player2_text, (3 * WIDTH // 4 - player2_text.get_width() // 2, HEIGHT // 2))
         screen.blit(player2_control, (3 * WIDTH // 4 - player2_control.get_width() // 2, HEIGHT // 2 + 40))
+    else:  # three_player
+        player1_text = controls_font.render("Player 1 (Red Bird)", True, RED)
+        player1_control = controls_font.render("Press W to flap", True, WHITE)
+        
+        player2_text = controls_font.render("Player 2 (Blue Bird)", True, BLUE)
+        player2_control = controls_font.render("Press UP ARROW to flap", True, WHITE)
+        
+        player3_text = controls_font.render("Player 3 (Purple Bird)", True, PURPLE)
+        player3_control = controls_font.render("Press SPACE to flap", True, WHITE)
+        
+        screen.blit(player1_text, (WIDTH // 6 - player1_text.get_width() // 2, HEIGHT // 2))
+        screen.blit(player1_control, (WIDTH // 6 - player1_control.get_width() // 2, HEIGHT // 2 + 40))
+        
+        screen.blit(player2_text, (WIDTH // 2 - player2_text.get_width() // 2, HEIGHT // 2))
+        screen.blit(player2_control, (WIDTH // 2 - player2_control.get_width() // 2, HEIGHT // 2 + 40))
+        
+        screen.blit(player3_text, (5 * WIDTH // 6 - player3_text.get_width() // 2, HEIGHT // 2))
+        screen.blit(player3_control, (5 * WIDTH // 6 - player3_control.get_width() // 2, HEIGHT // 2 + 40))
     
     # Start instruction
-    start_text = controls_font.render("Press SPACE to start the game", True, YELLOW)
+    start_text = controls_font.render("Press ENTER to start the game", True, YELLOW)
     screen.blit(start_text, (WIDTH // 2 - start_text.get_width() // 2, HEIGHT * 3 // 4))
     
     pygame.display.update()
@@ -467,7 +536,7 @@ def show_start_screen(mode):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 waiting = False
         clock.tick(60)
 
@@ -500,10 +569,15 @@ def main():
     if mode == "single":
         bird1 = Bird(WIDTH // 2, RED, pygame.K_w)
         birds = [bird1]
-    else:  # two_player mode
+    elif mode == "two_player":
         bird1 = Bird(WIDTH // 4, RED, pygame.K_w)
         bird2 = Bird(3 * WIDTH // 4, BLUE, pygame.K_UP)
         birds = [bird1, bird2]
+    else:  # three_player mode
+        bird1 = Bird(WIDTH // 6, RED, pygame.K_w)
+        bird2 = Bird(WIDTH // 2, BLUE, pygame.K_UP)
+        bird3 = Bird(5 * WIDTH // 6, PURPLE, pygame.K_SPACE)
+        birds = [bird1, bird2, bird3]
     
     pipes = []
     last_pipe = pygame.time.get_ticks()
@@ -549,10 +623,15 @@ def main():
                     if mode == "single":
                         bird1 = Bird(WIDTH // 2, RED, pygame.K_w)
                         birds = [bird1]
-                    else:  # two_player mode
+                    elif mode == "two_player":
                         bird1 = Bird(WIDTH // 4, RED, pygame.K_w)
                         bird2 = Bird(3 * WIDTH // 4, BLUE, pygame.K_UP)
                         birds = [bird1, bird2]
+                    else:  # three_player mode
+                        bird1 = Bird(WIDTH // 6, RED, pygame.K_w)
+                        bird2 = Bird(WIDTH // 2, BLUE, pygame.K_UP)
+                        bird3 = Bird(5 * WIDTH // 6, PURPLE, pygame.K_SPACE)
+                        birds = [bird1, bird2, bird3]
                         
                     pipes = []
                     last_pipe = current_time
@@ -577,10 +656,9 @@ def main():
                 
                 # Bird flapping controls (only when game is active and not paused)
                 if game_active and not paused:
-                    if event.key == bird1.key_up:
-                        bird1.flap()
-                    if len(birds) > 1 and event.key == birds[1].key_up:
-                        birds[1].flap()
+                    for bird in birds:
+                        if event.key == bird.key_up:
+                            bird.flap()
         
         if game_active and not paused:
             # Add pipes at regular intervals
@@ -621,7 +699,7 @@ def main():
                         # Add a slight delay to appreciate the explosion
                         pygame.time.delay(500)  # 500ms delay
                         game_active = False
-            else:
+            elif mode == "two_player":
                 # Two player mode - game ends when any bird is dead
                 if not birds[0].alive or not birds[1].alive:
                     # Allow time for explosion to complete (don't immediately end game)
@@ -636,6 +714,20 @@ def main():
                             # Also end if birds died without exploding 
                             (not birds[0].alive and not birds[0].exploding) or
                             (not birds[1].alive and not birds[1].exploding)):
+                            # Add a slight delay to appreciate the explosion
+                            pygame.time.delay(500)  # 500ms delay
+                            game_active = False
+            else:  # three_player mode
+                # Three player mode - game ends when at least one bird is dead
+                if not all(bird.alive for bird in birds):
+                    # Check if any explosions are still ongoing
+                    explosion_ongoing = any(not bird.alive and bird.exploding for bird in birds)
+                    
+                    if not explosion_ongoing:
+                        # Wait for all explosions to finish
+                        explosion_complete = all((bird.alive or bird.explosion_complete or not bird.exploding) for bird in birds)
+                        
+                        if explosion_complete:
                             # Add a slight delay to appreciate the explosion
                             pygame.time.delay(500)  # 500ms delay
                             game_active = False
@@ -683,9 +775,12 @@ def main():
                         # For explosions, we need to draw directly on the surface
                         bird.draw()
                 
-                # Draw a middle line to separate the players' sections (only in 2-player mode)
+                # Draw dividing lines (only in multi-player modes)
                 if mode == "two_player":
                     pygame.draw.line(shake_surface, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT), 2)
+                elif mode == "three_player":
+                    pygame.draw.line(shake_surface, WHITE, (WIDTH // 3, 0), (WIDTH // 3, HEIGHT), 2)
+                    pygame.draw.line(shake_surface, WHITE, (2 * WIDTH // 3, 0), (2 * WIDTH // 3, HEIGHT), 2)
                 
                 # Apply the shake by blitting the surface with offset
                 screen.blit(shake_surface, (shake_offset_x, shake_offset_y))
@@ -705,9 +800,12 @@ def main():
                 # Show scores
                 show_score(birds, mode)
                 
-                # Draw a middle line to separate the players' sections (only in 2-player mode)
+                # Draw dividing lines (only in multi-player modes)
                 if mode == "two_player":
                     pygame.draw.line(screen, WHITE, (WIDTH // 2, 0), (WIDTH // 2, HEIGHT), 2)
+                elif mode == "three_player":
+                    pygame.draw.line(screen, WHITE, (WIDTH // 3, 0), (WIDTH // 3, HEIGHT), 2)
+                    pygame.draw.line(screen, WHITE, (2 * WIDTH // 3, 0), (2 * WIDTH // 3, HEIGHT), 2)
             
         else:
             game_over_screen(birds, mode)
