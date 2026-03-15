@@ -8,14 +8,19 @@ For each game directory:
 - Install dependencies: `cd [game-dir] && uv add pygame` (no need to run `uv venv` or `uv pip install`)
 - Run games:
   - Army: `cd army && uv run python army.py &`
+  - Artillery: `cd artillery && uv run python artillery.py &`
   - Flappy Bird: `cd flappy2 && uv run python flappy_2player.py &`
   - Monster Slicing: `cd slicing && uv run python run_game.py &`
   - OMD (Orcs Must Die): `cd omd && uv run python main.py &`
   - Platformer: `cd platformer && uv run python platformer.py &`
+  - Pirates: `cd pirates && uv run python pirates.py &`
   - Snake: `cd snake && uv run python snake.py &`
-  - Spacewar: `cd spacewar && uv run python spacewar.py &`
-  
+  - Spacewar (pygame): `cd spacewar && uv run python spacewar.py &`
+  - Spacewar Web (Three.js): `cd spacewar-web && python3 -m http.server 8000 &` then open http://localhost:8000
+  - Racing: `cd racing && uv run --script racing.py &`
+
 Note: Always run games in the background (with &), not the foreground. No need to pkill in advance.
+Note: Games without a pyproject.toml use inline script metadata and must be run with `uv run --script <file>.py` instead of `uv run python <file>.py`.
 
 ## Code Style Guidelines
 - **Imports**: Standard library first, then third-party packages

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spacewar</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://esm.sh/three@0.169.0",
+    "three/addons/": "https://esm.sh/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+#canvas-container { position: relative; width: 100vw; height: 100vh; }
+canvas { display: block; }
+
+/* Neon text mixin */
+.neon-cyan  { color: #00ffff; text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff, 0 0 40px #00ffff; }
+.neon-magenta { color: #ff00ff; text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff; }
+.neon-white { color: #ffffff; text-shadow: 0 0 8px #ffffff, 0 0 16px #aaaaff; }
+.neon-orange { color: #ffaa00; text-shadow: 0 0 10px #ffaa00, 0 0 20px #ff6600; }
+.neon-green  { color: #00ff88; text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff44; }
+
+/* Overlay shared */
+.overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.overlay.interactive { pointer-events: auto; }
+.hidden { display: none !important; }
+
+/* Menu */
+#menu {
+  background: rgba(0,0,0,0.7);
+}
+#menu h1 {
+  font-size: 5rem; letter-spacing: 0.3em;
+  color: #00ffff;
+  text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 80px #00aaff;
+  margin-bottom: 2rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { text-shadow: 0 0 20px #00ffff, 0 0 40px #00ffff, 0 0 80px #00aaff; }
+  50%      { text-shadow: 0 0 30px #00ffff, 0 0 60px #00ffff, 0 0 120px #00aaff; }
+}
+.menu-option {
+  font-size: 1.6rem; margin: 0.6rem 0; padding: 0.4rem 2rem;
+  color: #888; cursor: pointer; transition: all 0.2s; letter-spacing: 0.1em;
+  pointer-events: auto;
+}
+.menu-option.selected {
+  color: #ffff00;
+  text-shadow: 0 0 10px #ffff00, 0 0 20px #ffff00;
+}
+.menu-option:hover { color: #00ffff; }
+.menu-hint { margin-top: 1.5rem; font-size: 0.9rem; color: #555; }
+.menu-rules { margin-top: 1.5rem; text-align: center; font-size: 0.8rem; color: #444; line-height: 1.8; }
+
+/* HUD */
+#hud {
+  position: absolute; top: 0; left: 0; width: 100%; pointer-events: none;
+  padding: 12px 20px; display: flex; justify-content: space-between; align-items: flex-start;
+}
+#hud-left, #hud-right { font-size: 0.85rem; line-height: 1.8; }
+#hud-center { text-align: center; font-size: 0.85rem; }
+.ship-hud { margin-bottom: 4px; }
+
+/* Game over */
+#gameover {
+  background: rgba(0,0,0,0.75);
+}
+#gameover h2 {
+  font-size: 3rem; letter-spacing: 0.2em; margin-bottom: 1rem;
+}
+#gameover p { font-size: 1.1rem; color: #888; margin: 0.3rem 0; }
+#gameover .hint { margin-top: 1.5rem; font-size: 0.9rem; color: #555; }
+</style>
+</head>
+<body>
+<div id="canvas-container">
+
+  <!-- Menu overlay -->
+  <div class="overlay interactive" id="menu">
+    <h1>SPACEWAR</h1>
+    <div class="menu-option selected" data-idx="0">0 Players (AI Only)</div>
+    <div class="menu-option" data-idx="1">1 Player</div>
+    <div class="menu-option" data-idx="2">2 Players</div>
+    <div class="menu-hint neon-white">↑ ↓ to select &nbsp;·&nbsp; ENTER to start</div>
+    <div class="menu-rules neon-white">
+      Collect cargo from orange PICKUP zones<br>
+      Slow down inside the zone to collect or deliver!<br>
+      Deliver to magenta DROPOFF zones to earn credits<br>
+      First to 5 credits wins
+    </div>
+  </div>
+
+  <!-- HUD (shown during gameplay) -->
+  <div id="hud" class="hidden">
+    <div id="hud-left"></div>
+    <div id="hud-center"></div>
+    <div id="hud-right"></div>
+  </div>
+
+  <!-- Game over overlay -->
+  <div class="overlay interactive hidden" id="gameover">
+    <h2 id="gameover-title" class="neon-cyan">GAME OVER</h2>
+    <p id="gameover-sub" class="neon-white"></p>
+    <div class="hint neon-white">R to restart &nbsp;·&nbsp; ESC for menu</div>
+  </div>
+
+</div>
+<script type="module" src="game.js?v=3"></script>
+</body>
+</html>
