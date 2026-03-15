@@ -659,16 +659,24 @@ class ShipMesh {
     this.cargoDot.visible = false;
     this.group.add(this.cargoDot);
 
-    // Energy trail: ring buffer of 20 positions
-    const TRAIL = 20;
-    this.trailPositions = new Float32Array(TRAIL * 3);
+    // Particle trail
+    const TRAIL_POOL = 120;
+    this.tp = TRAIL_POOL;
+    this.tPos = new Float32Array(TRAIL_POOL * 3);
+    this.tCol = new Float32Array(TRAIL_POOL * 3);
+    this.tVx  = new Float32Array(TRAIL_POOL);
+    this.tVy  = new Float32Array(TRAIL_POOL);
+    this.tLife    = new Float32Array(TRAIL_POOL);
+    this.tMaxLife = new Float32Array(TRAIL_POOL);
+    this.tActive  = 0;
+    const tc = new THREE.Color(color);
+    this.tR = tc.r; this.tG = tc.g; this.tB = tc.b;
     this.trailGeo = new THREE.BufferGeometry();
-    this.trailGeo.setAttribute('position', new THREE.BufferAttribute(this.trailPositions, 3));
-    this.trailGeo.setDrawRange(0, 0);
-    const trailMat = new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false });
-    this.trail = new THREE.Line(this.trailGeo, trailMat);
-    this.trailHead = 0; this.trailCount = 0; this.trailMax = TRAIL;
-    scene.add(this.trail);
+    this.trailGeo.setAttribute('position', new THREE.BufferAttribute(this.tPos, 3));
+    this.trailGeo.setAttribute('color',    new THREE.BufferAttribute(this.tCol, 3));
+    const trailMat = new THREE.PointsMaterial({ size: 5, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: false });
+    this.trailPts = new THREE.Points(this.trailGeo, trailMat);
+    scene.add(this.trailPts);
 
     scene.add(this.group);
     this.visible = true;
@@ -676,26 +684,56 @@ class ShipMesh {
 
   update(ship) {
     this.group.visible = !ship.destroyed;
-    if (ship.destroyed) { this.trail.visible = false; return; }
+    if (ship.destroyed) { this.trailPts.visible = false; return; }
     const wx = ship.x - W/2, wy = -(ship.y - H/2);
     this.group.position.set(wx, wy, 0);
     this.group.rotation.z = -(ship.angle * Math.PI / 180);
     this.cargoDot.visible = ship.hasCargo;
 
-    // Trail
-    this.trailPositions[this.trailHead*3]   = wx;
-    this.trailPositions[this.trailHead*3+1] = wy;
-    this.trailPositions[this.trailHead*3+2] = -1;
-    this.trailHead = (this.trailHead + 1) % this.trailMax;
-    if (this.trailCount < this.trailMax) this.trailCount++;
-    this.trailGeo.setDrawRange(0, this.trailCount);
+    // Emit trail particles from exhaust point
+    const rad = ship.angle * Math.PI / 180;
+    const exhaust = rad + Math.PI;
+    const ex = wx + Math.cos(exhaust) * SHIP_SIZE * 0.55;
+    const ey = wy + Math.sin(-exhaust) * SHIP_SIZE * 0.55;
+    const emitCount = ship.thrust ? 3 : 1;
+    for (let e = 0; e < emitCount && this.tActive < this.tp; e++) {
+      const idx = this.tActive++;
+      this.tPos[idx*3]   = ex + (Math.random() - 0.5) * 5;
+      this.tPos[idx*3+1] = ey + (Math.random() - 0.5) * 5;
+      this.tPos[idx*3+2] = -1;
+      this.tVx[idx] = (Math.random() - 0.5) * 0.5;
+      this.tVy[idx] = (Math.random() - 0.5) * 0.5;
+      const ml = ship.thrust ? rand(25, 45) : rand(12, 22);
+      this.tMaxLife[idx] = ml; this.tLife[idx] = ml;
+      this.tCol[idx*3] = this.tR; this.tCol[idx*3+1] = this.tG; this.tCol[idx*3+2] = this.tB;
+    }
+
+    // Update trail particles
+    let alive = 0;
+    for (let i = 0; i < this.tActive; i++) {
+      this.tLife[i]--;
+      if (this.tLife[i] <= 0) continue;
+      this.tPos[i*3]   += this.tVx[i];
+      this.tPos[i*3+1] += this.tVy[i];
+      const t = this.tLife[i] / this.tMaxLife[i];
+      this.tCol[i*3] = this.tR * t; this.tCol[i*3+1] = this.tG * t; this.tCol[i*3+2] = this.tB * t;
+      if (alive < i) {
+        this.tPos[alive*3] = this.tPos[i*3]; this.tPos[alive*3+1] = this.tPos[i*3+1]; this.tPos[alive*3+2] = this.tPos[i*3+2];
+        this.tVx[alive] = this.tVx[i]; this.tVy[alive] = this.tVy[i];
+        this.tLife[alive] = this.tLife[i]; this.tMaxLife[alive] = this.tMaxLife[i];
+        this.tCol[alive*3] = this.tCol[i*3]; this.tCol[alive*3+1] = this.tCol[i*3+1]; this.tCol[alive*3+2] = this.tCol[i*3+2];
+      }
+      alive++;
+    }
+    this.tActive = alive;
+    this.trailGeo.setDrawRange(0, alive);
     this.trailGeo.attributes.position.needsUpdate = true;
-    this.trail.visible = true;
+    this.trailGeo.attributes.color.needsUpdate = true;
   }
 
   dispose() {
     this.scene.remove(this.group);
-    this.scene.remove(this.trail);
+    this.scene.remove(this.trailPts);
   }
 }
 
@@ -1269,9 +1307,64 @@ function updateHUD() {
   hudRight.innerHTML = `<span class="neon-white">Goal: $${CREDIT_GOAL}</span>`;
 }
 
+// ============================================================
+// TEXT POP FEEDBACK
+// ============================================================
+function spawnTextPop(gameX, gameY, text, color) {
+  const sx = (gameX / W) * window.innerWidth;
+  const sy = (gameY / H) * window.innerHeight;
+  const el = document.createElement('div');
+  el.textContent = text;
+  Object.assign(el.style, {
+    position: 'absolute',
+    left: `${sx}px`,
+    top: `${sy}px`,
+    transform: 'translate(-50%, -50%)',
+    color,
+    fontFamily: "'Courier New', monospace",
+    fontSize: '1.1rem',
+    fontWeight: 'bold',
+    pointerEvents: 'none',
+    textShadow: `0 0 8px ${color}`,
+    zIndex: '100',
+    transition: 'opacity 0.75s ease-out, top 0.75s ease-out',
+    opacity: '1',
+  });
+  container.appendChild(el);
+  requestAnimationFrame(() => {
+    el.style.opacity = '0';
+    el.style.top = `${sy - 65}px`;
+  });
+  setTimeout(() => el.remove(), 800);
+}
+
+const prevCredits = [];
+const prevCargo   = [];
+
+function initFeedback() {
+  prevCredits.length = 0;
+  prevCargo.length   = 0;
+}
+
+function checkFeedback() {
+  for (let i = 0; i < state.ships.length; i++) {
+    const ship = state.ships[i];
+    const col  = SHIP_COLORS_HEX[Math.min(i, 2)];
+    if (prevCredits[i] !== undefined && ship.credits > prevCredits[i]) {
+      spawnTextPop(ship.x, ship.y, `+${ship.credits - prevCredits[i]} CREDIT!`, col);
+    }
+    if (prevCargo[i] === false && ship.hasCargo) {
+      spawnTextPop(ship.x, ship.y, 'CARGO!', '#ff8800');
+    }
+    prevCredits[i] = ship.credits;
+    prevCargo[i]   = ship.hasCargo;
+  }
+}
+
 function startGame(numPlayers) {
   state.initialize(numPlayers);
   initVisuals();
+  initFeedback();
   for (let i = 0; i < state.ships.length; i++) prevDestroyedState[i] = false;
 
   menuEl.classList.add('hidden');
@@ -1354,6 +1447,7 @@ function mainLoop(timestamp) {
       const prevAstCount = state.asteroids.length;
       checkExplosions();
       state.tick(keys);
+      checkFeedback();
       // Check for new asteroid count (breakApart spawned frags)
       accumulator -= FIXED_DT;
       gameTime += FIXED_DT;
