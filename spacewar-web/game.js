@@ -20,7 +20,7 @@ const SHIP_SPEED = 0.2;
 const SHIP_ROTATION_SPEED = 3;  // degrees per frame
 const SHIP_DRAG = 0.005;
 const MAX_VELOCITY = 5;
-const MAX_PICKUP_VELOCITY = 1.0;
+const MAX_PICKUP_VELOCITY = 2.0;
 
 const ASTEROID_SIZES = { large: 40, medium: 20, small: 10 };
 const ASTEROID_SPEED_MIN = 0.5, ASTEROID_SPEED_MAX = 2.0;
@@ -648,7 +648,7 @@ class ShipMesh {
     ]);
     geoG.setAttribute('position', new THREE.BufferAttribute(vertsG, 3));
     geoG.setIndex([0,1,2]);
-    const matG = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.06, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false });
+    const matG = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.03, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false });
     this.glow = new THREE.Mesh(geoG, matG);
     this.group.add(this.glow);
 
@@ -690,23 +690,24 @@ class ShipMesh {
     this.group.rotation.z = -(ship.angle * Math.PI / 180);
     this.cargoDot.visible = ship.hasCargo;
 
-    // Emit trail particles from exhaust point
-    const rad = ship.angle * Math.PI / 180;
-    const exhaust = rad + Math.PI;
-    const ex = wx + Math.cos(exhaust) * SHIP_SIZE * 0.55;
-    const ey = wy + Math.sin(-exhaust) * SHIP_SIZE * 0.55;
-    const emitCount = ship.thrust ? 3 : 1;
-    for (let e = 0; e < emitCount && this.tActive < this.tp; e++) {
-      const idx = this.tActive++;
-      this.tPos[idx*3]   = ex + (Math.random() - 0.5) * 5;
-      this.tPos[idx*3+1] = ey + (Math.random() - 0.5) * 5;
-      this.tPos[idx*3+2] = -1;
-      const exhaustSpd = rand(1.5, 3.0);
-      this.tVx[idx] = Math.cos(exhaust) * exhaustSpd + (Math.random() - 0.5) * 0.8;
-      this.tVy[idx] = Math.sin(-exhaust) * exhaustSpd + (Math.random() - 0.5) * 0.8;
-      const ml = ship.thrust ? rand(25, 45) : rand(12, 22);
-      this.tMaxLife[idx] = ml; this.tLife[idx] = ml;
-      this.tCol[idx*3] = this.tR; this.tCol[idx*3+1] = this.tG; this.tCol[idx*3+2] = this.tB;
+    // Emit trail particles from exhaust point (thrust only)
+    if (ship.thrust) {
+      const rad = ship.angle * Math.PI / 180;
+      const exhaust = rad + Math.PI;
+      const ex = wx + Math.cos(exhaust) * SHIP_SIZE * 0.55;
+      const ey = wy + Math.sin(-exhaust) * SHIP_SIZE * 0.55;
+      for (let e = 0; e < 3 && this.tActive < this.tp; e++) {
+        const idx = this.tActive++;
+        this.tPos[idx*3]   = ex + (Math.random() - 0.5) * 5;
+        this.tPos[idx*3+1] = ey + (Math.random() - 0.5) * 5;
+        this.tPos[idx*3+2] = -1;
+        const exhaustSpd = rand(1.5, 3.0);
+        this.tVx[idx] = Math.cos(exhaust) * exhaustSpd + (Math.random() - 0.5) * 0.8;
+        this.tVy[idx] = Math.sin(-exhaust) * exhaustSpd + (Math.random() - 0.5) * 0.8;
+        const ml = rand(25, 45);
+        this.tMaxLife[idx] = ml; this.tLife[idx] = ml;
+        this.tCol[idx*3] = this.tR; this.tCol[idx*3+1] = this.tG; this.tCol[idx*3+2] = this.tB;
+      }
     }
 
     // Update trail particles
@@ -1147,7 +1148,7 @@ const scene = new THREE.Scene();
 
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.6, 0.4, 0.35);
+const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.35, 0.3, 0.55);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
 
