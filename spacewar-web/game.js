@@ -701,8 +701,9 @@ class ShipMesh {
       this.tPos[idx*3]   = ex + (Math.random() - 0.5) * 5;
       this.tPos[idx*3+1] = ey + (Math.random() - 0.5) * 5;
       this.tPos[idx*3+2] = -1;
-      this.tVx[idx] = (Math.random() - 0.5) * 0.5;
-      this.tVy[idx] = (Math.random() - 0.5) * 0.5;
+      const exhaustSpd = rand(1.5, 3.0);
+      this.tVx[idx] = Math.cos(exhaust) * exhaustSpd + (Math.random() - 0.5) * 0.8;
+      this.tVy[idx] = Math.sin(-exhaust) * exhaustSpd + (Math.random() - 0.5) * 0.8;
       const ml = ship.thrust ? rand(25, 45) : rand(12, 22);
       this.tMaxLife[idx] = ml; this.tLife[idx] = ml;
       this.tCol[idx*3] = this.tR; this.tCol[idx*3+1] = this.tG; this.tCol[idx*3+2] = this.tB;
