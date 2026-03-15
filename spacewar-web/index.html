@@ -71,6 +71,16 @@ canvas { display: block; }
 #hud-center { text-align: center; font-size: 0.85rem; }
 .ship-hud { margin-bottom: 4px; }
 
+/* Debug overlay */
+#debug {
+  position: absolute; bottom: 12px; left: 12px;
+  font-size: 0.75rem; line-height: 1.7; color: #0f0;
+  background: rgba(0,0,0,0.7); padding: 8px 12px;
+  pointer-events: none; white-space: pre;
+}
+#debug .ok  { color: #0f0; }
+#debug .bad { color: #f44; }
+
 /* Game over */
 #gameover {
   background: rgba(0,0,0,0.75);
@@ -106,6 +116,9 @@ canvas { display: block; }
     <div id="hud-center"></div>
     <div id="hud-right"></div>
   </div>
+
+  <!-- Debug overlay (D to toggle) -->
+  <div id="debug" class="hidden"></div>
 
   <!-- Game over overlay -->
   <div class="overlay interactive hidden" id="gameover">

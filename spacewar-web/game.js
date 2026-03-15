@@ -1191,8 +1191,10 @@ const hudCenter   = document.getElementById('hud-center');
 const hudRight    = document.getElementById('hud-right');
 const goTitle     = document.getElementById('gameover-title');
 const goSub       = document.getElementById('gameover-sub');
+const debugEl     = document.getElementById('debug');
 
 let gamePhase = 'menu';  // 'menu', 'playing', 'gameover'
+let debugMode = false;
 let selectedOption = 0;
 
 // Menu option elements
@@ -1363,6 +1365,54 @@ function checkFeedback() {
   }
 }
 
+function ok(val, label)  { return `<span class="ok">✓</span> ${label}: ${val}`; }
+function bad(val, label) { return `<span class="bad">✗</span> ${label}: ${val}`; }
+function chk(pass, val, label) { return pass ? ok(val, label) : bad(val, label); }
+
+function updateDebugHUD() {
+  if (!debugMode || gamePhase === 'menu') { debugEl.classList.add('hidden'); return; }
+  debugEl.classList.remove('hidden');
+
+  const lines = [];
+  for (let pi = 0; pi < state.numPlayers; pi++) {
+    const ship = state.ships[pi];
+    if (!ship) continue;
+    const label = `P${pi + 1}`;
+    lines.push(`<b style="color:#ff0">=== ${label} ===</b>`);
+    lines.push(chk(!ship.destroyed,    ship.destroyed,          'destroyed'));
+    lines.push(chk(!ship.hasCargo,     ship.hasCargo,           'hasCargo'));
+    lines.push(chk(ship.interactionCooldown === 0, ship.interactionCooldown, 'cooldown'));
+    lines.push(chk(ship.speed <= MAX_PICKUP_VELOCITY,
+                   ship.speed.toFixed(3) + ' / ' + MAX_PICKUP_VELOCITY, 'speed'));
+
+    const pickups  = state.zones.filter(z => z.zoneType === 'pickup');
+    const dropoffs = state.zones.filter(z => z.zoneType === 'dropoff');
+
+    if (pickups.length === 0) {
+      lines.push('<span class="bad">no pickup zone active</span>');
+    } else {
+      for (const z of pickups) {
+        const dist = ship.distTo(z);
+        const inRange = dist < z.size + ship.size;
+        lines.push(chk(inRange, dist.toFixed(1) + ' (need <' + (z.size + ship.size) + ')', 'pickup dist'));
+        lines.push(chk(z.activeTime > 0, (z.activeTime / FPS).toFixed(1) + 's', 'zone time left'));
+      }
+    }
+    if (dropoffs.length === 0) {
+      lines.push('<span style="color:#888">no dropoff zone active</span>');
+    } else {
+      for (const z of dropoffs) {
+        const dist = ship.distTo(z);
+        const inRange = dist < z.size + ship.size;
+        lines.push(`  dropoff dist: ${dist.toFixed(1)} ${inRange ? '<span class="ok">(in range)</span>' : ''}`);
+      }
+    }
+    lines.push('');
+  }
+  lines.push('<span style="color:#888">D = toggle debug</span>');
+  debugEl.innerHTML = lines.join('\n');
+}
+
 function startGame(numPlayers) {
   state.initialize(numPlayers);
   initVisuals();
@@ -1408,6 +1458,8 @@ document.addEventListener('keydown', (e) => {
       startGame(state.numPlayers);
     } else if (e.code === 'Escape') {
       returnToMenu();
+    } else if (e.code === 'Backquote') {
+      debugMode = !debugMode;
     }
     // Player 1 controls
     if (e.code === 'ArrowUp')    state.playerControls[0].thrust = 1;
@@ -1462,6 +1514,7 @@ function mainLoop(timestamp) {
 
     syncVisuals(gameTime);
     updateHUD();
+    updateDebugHUD();
   } else if (gamePhase === 'gameover') {
     syncVisuals(gameTime);
   }
