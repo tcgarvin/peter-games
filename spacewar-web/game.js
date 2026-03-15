@@ -957,6 +957,9 @@ class DeliveryZoneMesh {
   }
 
   update(zone, t) {
+    // Keep visual position in sync — zone data can be replaced in-place when
+    // both zones expire and new ones spawn in the same tick (every 20s).
+    this.group.position.set(zone.x - W/2, -(zone.y - H/2), 0);
     this.time += 0.05;
     const pulse = 0.9 + 0.1 * Math.sin(t * 4);
     this.ring.scale.setScalar(pulse);
