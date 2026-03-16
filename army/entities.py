@@ -83,6 +83,7 @@ class Regiment:
         self.stationary_time = 0  # How long the regiment has been stationary
         self.recovery_time = 0    # Time after firing before movement is possible
         self.last_action = None   # Track last action for stationary detection
+        self.consecutive_retreats = 0   # Simple counter for consecutive retreats
         
         # AI type for regiment (will be shown in debug mode)
         self.ai_type = "Standard"  # Will be set by the AI classes
@@ -103,6 +104,12 @@ class Regiment:
             self.stationary_time = 0  # Reset stationary time if moving
         else:
             self.stationary_time += 1  # Increment if stationary
+            
+        # Simple retreat tracking
+        if action == "move_backward":
+            self.consecutive_retreats += 1
+        else:
+            self.consecutive_retreats = 0
         
         # Apply the action
         if action == "move_forward":
@@ -219,6 +226,16 @@ class Regiment:
         if self.health < REGIMENT_HEALTH * 0.3:
             health_color = RED
         pygame.draw.rect(screen, health_color, (health_x, health_y, health_fill, health_height))
+        
+        # Show retreat counter for debugging
+        if self.consecutive_retreats > 0:
+            retreat_color = (255, 255, 0)  # Yellow for normal retreat
+            if self.consecutive_retreats > 45:  # Threshold matches AI decision
+                retreat_color = (255, 50, 50)  # Red for excessive retreat
+                
+            # Show simple retreat indicator and count
+            retreat_text = font.render(f"R:{self.consecutive_retreats}", True, retreat_color)
+            screen.blit(retreat_text, (int(center_x) - 15, int(center_y) + 25))
         
         # Show status indicators only in debug mode
         if DEBUG_MODE:

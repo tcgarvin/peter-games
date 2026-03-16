@@ -113,13 +113,45 @@ class AI:
                     action = "wheel_left"
                 
             elif min_distance < min_range:
-                # Too close - need to back up
-                if abs(angle_diff) < math.radians(p["maneuver_threshold"]):
-                    action = "move_backward"
-                elif angle_diff > 0:
-                    action = "wheel_right"
+                # Too close - back up to optimal range
+                
+                # If we've been retreating for too long, try a different tactic
+                if regiment.consecutive_retreats > 45:  # ~45 frames (1.5 seconds) of continuous retreat
+                    # Either hold and fire, or try a flanking maneuver
+                    if regiment.can_fire() or regiment.stationary_time > 15:
+                        action = "hold"  # Stand and fight
+                    else:
+                        # Try moving perpendicular to enemy instead
+                        # Calculate perpendicular direction (90 degrees to enemy)
+                        right_perp = angle_to_enemy + math.pi/2
+                        left_perp = angle_to_enemy - math.pi/2
+                        
+                        # Choose direction that requires the least turning
+                        right_diff = abs(right_perp - current_angle_rad)
+                        while right_diff > math.pi:
+                            right_diff = abs(right_diff - 2*math.pi)
+                            
+                        left_diff = abs(left_perp - current_angle_rad)
+                        while left_diff > math.pi:
+                            left_diff = abs(left_diff - 2*math.pi)
+                            
+                        if right_diff < left_diff:
+                            action = "wheel_right"
+                        else:
+                            action = "wheel_left"
+                # Standard retreat behavior
+                elif regiment.can_fire():
+                    action = "fire"  # If we can fire, do that even if we're too close
                 else:
-                    action = "wheel_left"
+                    if abs(angle_diff) < math.radians(p["maneuver_threshold"]):
+                        # Facing enemy, so move backward
+                        action = "move_backward"
+                    elif angle_diff > 0:
+                        # Need to align better
+                        action = "wheel_right"
+                    else:
+                        # Need to align better
+                        action = "wheel_left"
                     
             # Fourth priority: align with enemy
             elif abs(angle_diff) > math.radians(p["alignment_threshold"] / 2):
