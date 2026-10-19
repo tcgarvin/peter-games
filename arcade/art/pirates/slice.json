@@ -1,0 +1,216 @@
+{
+  "layouts": {
+    "portrait": {
+      "base": "src/portrait-base.png",
+      "variants": {
+        "up": "src/portrait-up.png",
+        "down": "src/portrait-down.png",
+        "left": "src/portrait-left.png",
+        "right": "src/portrait-right.png",
+        "pressed": "src/portrait-pressed.png"
+      },
+      "screen_near": [
+        512,
+        600
+      ],
+      "screen_aspect": [
+        4,
+        3
+      ],
+      "marquee": [
+        40,
+        20,
+        985,
+        290
+      ],
+      "controls": {
+        "p1_stick": {
+          "type": "joystick",
+          "near": [
+            175,
+            1010
+          ]
+        },
+        "p1_fire": {
+          "type": "button",
+          "near": [
+            145,
+            1158
+          ],
+          "search": [
+            130,
+            110
+          ]
+        },
+        "p1_fire2": {
+          "type": "button",
+          "near": [
+            312,
+            1158
+          ],
+          "search": [
+            130,
+            110
+          ]
+        },
+        "start_1p": {
+          "type": "button",
+          "near": [
+            512,
+            1003
+          ],
+          "search": [
+            130,
+            110
+          ]
+        },
+        "start_2p": {
+          "type": "button",
+          "near": [
+            512,
+            1113
+          ],
+          "search": [
+            130,
+            110
+          ]
+        },
+        "p2_stick": {
+          "type": "joystick",
+          "near": [
+            852,
+            1010
+          ]
+        },
+        "p2_fire": {
+          "type": "button",
+          "near": [
+            713,
+            1158
+          ],
+          "search": [
+            130,
+            110
+          ]
+        },
+        "p2_fire2": {
+          "type": "button",
+          "near": [
+            881,
+            1158
+          ],
+          "search": [
+            130,
+            110
+          ]
+        }
+      }
+    },
+    "landscape": {
+      "base": "src/landscape-base.png",
+      "variants": {
+        "up": "src/landscape-up.png",
+        "down": "src/landscape-down.png",
+        "left": "src/landscape-left.png",
+        "right": "src/landscape-right.png",
+        "pressed": "src/landscape-pressed.png"
+      },
+      "screen_near": [
+        768,
+        570
+      ],
+      "screen_aspect": [
+        4,
+        3
+      ],
+      "marquee": [
+        40,
+        20,
+        1500,
+        280
+      ],
+      "controls": {
+        "p1_stick": {
+          "type": "joystick",
+          "near": [
+            228,
+            490
+          ]
+        },
+        "p1_fire": {
+          "type": "button",
+          "near": [
+            150,
+            655
+          ],
+          "search": [
+            130,
+            110
+          ]
+        },
+        "p1_fire2": {
+          "type": "button",
+          "near": [
+            298,
+            655
+          ],
+          "search": [
+            130,
+            110
+          ]
+        },
+        "start_1p": {
+          "type": "button",
+          "near": [
+            222,
+            773
+          ],
+          "search": [
+            130,
+            110
+          ]
+        },
+        "p2_stick": {
+          "type": "joystick",
+          "near": [
+            1305,
+            490
+          ]
+        },
+        "p2_fire": {
+          "type": "button",
+          "near": [
+            1235,
+            655
+          ],
+          "search": [
+            130,
+            110
+          ]
+        },
+        "p2_fire2": {
+          "type": "button",
+          "near": [
+            1383,
+            655
+          ],
+          "search": [
+            130,
+            110
+          ]
+        },
+        "start_2p": {
+          "type": "button",
+          "near": [
+            1312,
+            773
+          ],
+          "search": [
+            130,
+            110
+          ]
+        }
+      }
+    }
+  }
+}

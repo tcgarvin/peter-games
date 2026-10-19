@@ -1,0 +1,128 @@
+{
+  "layouts": {
+    "portrait": {
+      "base": "src/portrait-base.png",
+      "variants": {
+        "pressed": "src/portrait-pressed.png"
+      },
+      "screen_near": [
+        512,
+        590
+      ],
+      "screen_aspect": [
+        800,
+        600
+      ],
+      "marquee": [
+        60,
+        40,
+        970,
+        255
+      ],
+      "controls": {
+        "p1_fire": {
+          "type": "button",
+          "near": [
+            251,
+            957
+          ]
+        },
+        "start_1p": {
+          "type": "button",
+          "near": [
+            428,
+            993
+          ],
+          "search": [
+            120,
+            100
+          ]
+        },
+        "start_2p": {
+          "type": "button",
+          "near": [
+            598,
+            993
+          ],
+          "search": [
+            120,
+            100
+          ]
+        },
+        "p2_fire": {
+          "type": "button",
+          "near": [
+            773,
+            958
+          ]
+        }
+      }
+    },
+    "landscape": {
+      "base": "src/landscape-base.png",
+      "variants": {
+        "pressed": "src/landscape-pressed.png"
+      },
+      "screen_near": [
+        770,
+        590
+      ],
+      "screen_aspect": [
+        800,
+        600
+      ],
+      "marquee": [
+        50,
+        25,
+        1490,
+        210
+      ],
+      "controls": {
+        "p1_fire": {
+          "type": "button",
+          "near": [
+            143,
+            496
+          ],
+          "search": [
+            160,
+            160
+          ]
+        },
+        "start_1p": {
+          "type": "button",
+          "near": [
+            139,
+            716
+          ],
+          "search": [
+            100,
+            96
+          ]
+        },
+        "p2_fire": {
+          "type": "button",
+          "near": [
+            1386,
+            498
+          ],
+          "search": [
+            160,
+            160
+          ]
+        },
+        "start_2p": {
+          "type": "button",
+          "near": [
+            1397,
+            716
+          ],
+          "search": [
+            100,
+            96
+          ]
+        }
+      }
+    }
+  }
+}

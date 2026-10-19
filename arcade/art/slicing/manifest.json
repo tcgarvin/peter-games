@@ -1,0 +1,266 @@
+{
+  "layouts": {
+    "portrait": {
+      "image": "cabinet-portrait.webp",
+      "size": [
+        1024,
+        1536
+      ],
+      "screen": {
+        "x": 180,
+        "y": 354,
+        "w": 663,
+        "h": 497
+      },
+      "controls": {
+        "p1_stick": {
+          "type": "joystick",
+          "hit": {
+            "cx": 300,
+            "cy": 970,
+            "r": 106
+          },
+          "states": {
+            "neutral": {
+              "file": "portrait-p1_stick-neutral.webp",
+              "x": 151,
+              "y": 861
+            },
+            "up": {
+              "file": "portrait-p1_stick-up.webp",
+              "x": 151,
+              "y": 861
+            },
+            "down": {
+              "file": "portrait-p1_stick-down.webp",
+              "x": 151,
+              "y": 861
+            },
+            "left": {
+              "file": "portrait-p1_stick-left.webp",
+              "x": 151,
+              "y": 861
+            },
+            "right": {
+              "file": "portrait-p1_stick-right.webp",
+              "x": 151,
+              "y": 861
+            }
+          }
+        },
+        "p1_aim": {
+          "type": "joystick",
+          "hit": {
+            "cx": 660,
+            "cy": 970,
+            "r": 104
+          },
+          "states": {
+            "neutral": {
+              "file": "portrait-p1_aim-neutral.webp",
+              "x": 541,
+              "y": 868
+            },
+            "up": {
+              "file": "portrait-p1_aim-up.webp",
+              "x": 541,
+              "y": 868
+            },
+            "down": {
+              "file": "portrait-p1_aim-down.webp",
+              "x": 541,
+              "y": 868
+            },
+            "left": {
+              "file": "portrait-p1_aim-left.webp",
+              "x": 541,
+              "y": 868
+            },
+            "right": {
+              "file": "portrait-p1_aim-right.webp",
+              "x": 541,
+              "y": 868
+            }
+          }
+        },
+        "p1_fire": {
+          "type": "button",
+          "hit": {
+            "cx": 870,
+            "cy": 1041,
+            "r": 72
+          },
+          "states": {
+            "up": {
+              "file": "portrait-p1_fire-up.webp",
+              "x": 799,
+              "y": 969
+            },
+            "down": {
+              "file": "portrait-p1_fire-down.webp",
+              "x": 799,
+              "y": 969
+            }
+          }
+        },
+        "start_1p": {
+          "type": "button",
+          "hit": {
+            "cx": 501,
+            "cy": 1140,
+            "r": 58
+          },
+          "states": {
+            "up": {
+              "file": "portrait-start_1p-up.webp",
+              "x": 443,
+              "y": 1086
+            },
+            "down": {
+              "file": "portrait-start_1p-down.webp",
+              "x": 443,
+              "y": 1086
+            }
+          }
+        }
+      },
+      "marquee": {
+        "x": 40,
+        "y": 10,
+        "w": 945,
+        "h": 275
+      }
+    },
+    "landscape": {
+      "image": "cabinet-landscape.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "screen": {
+        "x": 309,
+        "y": 222,
+        "w": 918,
+        "h": 688
+      },
+      "controls": {
+        "p1_stick": {
+          "type": "joystick",
+          "hit": {
+            "cx": 142,
+            "cy": 585,
+            "r": 129
+          },
+          "states": {
+            "neutral": {
+              "file": "landscape-p1_stick-neutral.webp",
+              "x": 13,
+              "y": 441
+            },
+            "up": {
+              "file": "landscape-p1_stick-up.webp",
+              "x": 13,
+              "y": 441
+            },
+            "down": {
+              "file": "landscape-p1_stick-down.webp",
+              "x": 13,
+              "y": 441
+            },
+            "left": {
+              "file": "landscape-p1_stick-left.webp",
+              "x": 13,
+              "y": 441
+            },
+            "right": {
+              "file": "landscape-p1_stick-right.webp",
+              "x": 13,
+              "y": 441
+            }
+          }
+        },
+        "start_1p": {
+          "type": "button",
+          "hit": {
+            "cx": 142,
+            "cy": 837,
+            "r": 89
+          },
+          "states": {
+            "up": {
+              "file": "landscape-start_1p-up.webp",
+              "x": 53,
+              "y": 766
+            },
+            "down": {
+              "file": "landscape-start_1p-down.webp",
+              "x": 53,
+              "y": 766
+            }
+          }
+        },
+        "p1_aim": {
+          "type": "joystick",
+          "hit": {
+            "cx": 1395,
+            "cy": 585,
+            "r": 129
+          },
+          "states": {
+            "neutral": {
+              "file": "landscape-p1_aim-neutral.webp",
+              "x": 1266,
+              "y": 441
+            },
+            "up": {
+              "file": "landscape-p1_aim-up.webp",
+              "x": 1266,
+              "y": 441
+            },
+            "down": {
+              "file": "landscape-p1_aim-down.webp",
+              "x": 1266,
+              "y": 441
+            },
+            "left": {
+              "file": "landscape-p1_aim-left.webp",
+              "x": 1266,
+              "y": 441
+            },
+            "right": {
+              "file": "landscape-p1_aim-right.webp",
+              "x": 1266,
+              "y": 441
+            }
+          }
+        },
+        "p1_fire": {
+          "type": "button",
+          "hit": {
+            "cx": 1395,
+            "cy": 837,
+            "r": 89
+          },
+          "states": {
+            "up": {
+              "file": "landscape-p1_fire-up.webp",
+              "x": 1306,
+              "y": 766
+            },
+            "down": {
+              "file": "landscape-p1_fire-down.webp",
+              "x": 1306,
+              "y": 766
+            }
+          }
+        }
+      },
+      "marquee": {
+        "x": 190,
+        "y": 0,
+        "w": 1170,
+        "h": 185
+      }
+    }
+  }
+}

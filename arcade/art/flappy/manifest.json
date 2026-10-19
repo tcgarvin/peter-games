@@ -1,0 +1,206 @@
+{
+  "layouts": {
+    "portrait": {
+      "image": "cabinet-portrait.webp",
+      "size": [
+        1024,
+        1536
+      ],
+      "screen": {
+        "x": 187,
+        "y": 346,
+        "w": 651,
+        "h": 488
+      },
+      "controls": {
+        "p1_fire": {
+          "type": "button",
+          "hit": {
+            "cx": 251,
+            "cy": 964,
+            "r": 72
+          },
+          "states": {
+            "up": {
+              "file": "portrait-p1_fire-up.webp",
+              "x": 181,
+              "y": 892
+            },
+            "down": {
+              "file": "portrait-p1_fire-down.webp",
+              "x": 181,
+              "y": 892
+            }
+          }
+        },
+        "start_1p": {
+          "type": "button",
+          "hit": {
+            "cx": 428,
+            "cy": 993,
+            "r": 46
+          },
+          "states": {
+            "up": {
+              "file": "portrait-start_1p-up.webp",
+              "x": 383,
+              "y": 954
+            },
+            "down": {
+              "file": "portrait-start_1p-down.webp",
+              "x": 383,
+              "y": 954
+            }
+          }
+        },
+        "start_2p": {
+          "type": "button",
+          "hit": {
+            "cx": 598,
+            "cy": 993,
+            "r": 44
+          },
+          "states": {
+            "up": {
+              "file": "portrait-start_2p-up.webp",
+              "x": 554,
+              "y": 954
+            },
+            "down": {
+              "file": "portrait-start_2p-down.webp",
+              "x": 554,
+              "y": 954
+            }
+          }
+        },
+        "p2_fire": {
+          "type": "button",
+          "hit": {
+            "cx": 773,
+            "cy": 958,
+            "r": 71
+          },
+          "states": {
+            "up": {
+              "file": "portrait-p2_fire-up.webp",
+              "x": 702,
+              "y": 892
+            },
+            "down": {
+              "file": "portrait-p2_fire-down.webp",
+              "x": 702,
+              "y": 892
+            }
+          }
+        }
+      },
+      "marquee": {
+        "x": 60,
+        "y": 40,
+        "w": 910,
+        "h": 215
+      }
+    },
+    "landscape": {
+      "image": "cabinet-landscape.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "screen": {
+        "x": 361,
+        "y": 288,
+        "w": 812,
+        "h": 609
+      },
+      "controls": {
+        "p1_fire": {
+          "type": "button",
+          "hit": {
+            "cx": 153,
+            "cy": 491,
+            "r": 84
+          },
+          "states": {
+            "up": {
+              "file": "landscape-p1_fire-up.webp",
+              "x": 69,
+              "y": 408
+            },
+            "down": {
+              "file": "landscape-p1_fire-down.webp",
+              "x": 69,
+              "y": 408
+            }
+          }
+        },
+        "start_1p": {
+          "type": "button",
+          "hit": {
+            "cx": 139,
+            "cy": 716,
+            "r": 48
+          },
+          "states": {
+            "up": {
+              "file": "landscape-start_1p-up.webp",
+              "x": 92,
+              "y": 668
+            },
+            "down": {
+              "file": "landscape-start_1p-down.webp",
+              "x": 92,
+              "y": 668
+            }
+          }
+        },
+        "p2_fire": {
+          "type": "button",
+          "hit": {
+            "cx": 1394,
+            "cy": 489,
+            "r": 86
+          },
+          "states": {
+            "up": {
+              "file": "landscape-p2_fire-up.webp",
+              "x": 1309,
+              "y": 404
+            },
+            "down": {
+              "file": "landscape-p2_fire-down.webp",
+              "x": 1309,
+              "y": 404
+            }
+          }
+        },
+        "start_2p": {
+          "type": "button",
+          "hit": {
+            "cx": 1397,
+            "cy": 716,
+            "r": 48
+          },
+          "states": {
+            "up": {
+              "file": "landscape-start_2p-up.webp",
+              "x": 1351,
+              "y": 669
+            },
+            "down": {
+              "file": "landscape-start_2p-down.webp",
+              "x": 1351,
+              "y": 669
+            }
+          }
+        }
+      },
+      "marquee": {
+        "x": 50,
+        "y": 25,
+        "w": 1440,
+        "h": 185
+      }
+    }
+  }
+}

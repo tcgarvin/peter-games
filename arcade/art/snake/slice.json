@@ -1,0 +1,46 @@
+{
+  "layouts": {
+    "portrait": {
+      "base": "src/portrait-base.png",
+      "variants": {
+        "up": "src/portrait-up.png",
+        "down": "src/portrait-down.png",
+        "left": "src/portrait-left.png",
+        "right": "src/portrait-right.png",
+        "pressed": "src/portrait-pressed.png"
+      },
+      "screen_near": [512, 630],
+      "screen_aspect": [1, 1],
+      "marquee": [40, 20, 985, 195],
+      "controls": {
+        "p1_stick": {"type": "joystick", "near": [186, 1150], "search": [240, 260]},
+        "p1_fire": {"type": "button", "near": [376, 1165]},
+        "p2_stick": {"type": "joystick", "near": [680, 1150], "search": [240, 260]},
+        "p2_fire": {"type": "button", "near": [862, 1165]},
+        "start_1p": {"type": "button", "near": [430, 1300], "search": [130, 110]},
+        "start_2p": {"type": "button", "near": [590, 1300], "search": [130, 110]}
+      }
+    },
+    "landscape": {
+      "base": "src/landscape-base.png",
+      "variants": {
+        "up": "src/landscape-up.png",
+        "down": "src/landscape-down.png",
+        "left": "src/landscape-left.png",
+        "right": "src/landscape-right.png",
+        "pressed": "src/landscape-pressed.png"
+      },
+      "screen_near": [768, 560],
+      "screen_aspect": [1, 1],
+      "marquee": [40, 15, 1500, 140],
+      "controls": {
+        "p1_stick": {"type": "joystick", "near": [172, 380], "search": [240, 260]},
+        "p1_fire": {"type": "button", "near": [172, 560], "search": [150, 110]},
+        "start_1p": {"type": "button", "near": [172, 722], "search": [150, 110]},
+        "p2_stick": {"type": "joystick", "near": [1362, 380], "search": [240, 260]},
+        "p2_fire": {"type": "button", "near": [1362, 560], "search": [150, 110]},
+        "start_2p": {"type": "button", "near": [1362, 722], "search": [150, 110]}
+      }
+    }
+  }
+}

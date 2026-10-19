@@ -1,0 +1,196 @@
+{
+  "layouts": {
+    "portrait": {
+      "image": "cabinet-portrait.webp",
+      "size": [
+        1024,
+        1536
+      ],
+      "screen": {
+        "x": 182,
+        "y": 373,
+        "w": 659,
+        "h": 494
+      },
+      "controls": {
+        "p1_stick": {
+          "type": "joystick",
+          "hit": {
+            "cx": 330,
+            "cy": 990,
+            "r": 82
+          },
+          "states": {
+            "neutral": {
+              "file": "portrait-p1_stick-neutral.webp",
+              "x": 216,
+              "y": 867
+            },
+            "up": {
+              "file": "portrait-p1_stick-up.webp",
+              "x": 216,
+              "y": 867
+            },
+            "down": {
+              "file": "portrait-p1_stick-down.webp",
+              "x": 216,
+              "y": 867
+            },
+            "left": {
+              "file": "portrait-p1_stick-left.webp",
+              "x": 216,
+              "y": 867
+            },
+            "right": {
+              "file": "portrait-p1_stick-right.webp",
+              "x": 216,
+              "y": 867
+            }
+          }
+        },
+        "start_1p": {
+          "type": "button",
+          "hit": {
+            "cx": 512,
+            "cy": 988,
+            "r": 51
+          },
+          "states": {
+            "up": {
+              "file": "portrait-start_1p-up.webp",
+              "x": 461,
+              "y": 937
+            },
+            "down": {
+              "file": "portrait-start_1p-down.webp",
+              "x": 461,
+              "y": 937
+            }
+          }
+        },
+        "p1_fire": {
+          "type": "button",
+          "hit": {
+            "cx": 682,
+            "cy": 1018,
+            "r": 62
+          },
+          "states": {
+            "up": {
+              "file": "portrait-p1_fire-up.webp",
+              "x": 620,
+              "y": 962
+            },
+            "down": {
+              "file": "portrait-p1_fire-down.webp",
+              "x": 620,
+              "y": 962
+            }
+          }
+        }
+      },
+      "marquee": {
+        "x": 40,
+        "y": 30,
+        "w": 945,
+        "h": 230
+      }
+    },
+    "landscape": {
+      "image": "cabinet-landscape.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "screen": {
+        "x": 282,
+        "y": 224,
+        "w": 963,
+        "h": 722
+      },
+      "controls": {
+        "p1_stick": {
+          "type": "joystick",
+          "hit": {
+            "cx": 150,
+            "cy": 570,
+            "r": 111
+          },
+          "states": {
+            "neutral": {
+              "file": "landscape-p1_stick-neutral.webp",
+              "x": 40,
+              "y": 406
+            },
+            "up": {
+              "file": "landscape-p1_stick-up.webp",
+              "x": 40,
+              "y": 406
+            },
+            "down": {
+              "file": "landscape-p1_stick-down.webp",
+              "x": 40,
+              "y": 406
+            },
+            "left": {
+              "file": "landscape-p1_stick-left.webp",
+              "x": 40,
+              "y": 406
+            },
+            "right": {
+              "file": "landscape-p1_stick-right.webp",
+              "x": 40,
+              "y": 406
+            }
+          }
+        },
+        "p1_fire": {
+          "type": "button",
+          "hit": {
+            "cx": 1391,
+            "cy": 555,
+            "r": 69
+          },
+          "states": {
+            "up": {
+              "file": "landscape-p1_fire-up.webp",
+              "x": 1327,
+              "y": 486
+            },
+            "down": {
+              "file": "landscape-p1_fire-down.webp",
+              "x": 1327,
+              "y": 486
+            }
+          }
+        },
+        "start_1p": {
+          "type": "button",
+          "hit": {
+            "cx": 1392,
+            "cy": 700,
+            "r": 61
+          },
+          "states": {
+            "up": {
+              "file": "landscape-start_1p-up.webp",
+              "x": 1339,
+              "y": 639
+            },
+            "down": {
+              "file": "landscape-start_1p-down.webp",
+              "x": 1339,
+              "y": 639
+            }
+          }
+        }
+      },
+      "marquee": {
+        "x": 60,
+        "y": 40,
+        "w": 1410,
+        "h": 125
+      }
+    }
+  }
+}

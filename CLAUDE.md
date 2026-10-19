@@ -18,6 +18,7 @@ For each game directory:
   - Spacewar (pygame): `cd spacewar && uv run python spacewar.py &`
   - Spacewar Web (Three.js): `cd spacewar-web && python3 -m http.server 8000 &` then open http://localhost:8000
   - Racing: `cd racing && uv run --script racing.py &`
+  - Arcade (web ports of all the games in cabinets): `cd arcade && python3 -m http.server 8765 &` then open http://localhost:8765 (lobby) or http://localhost:8765/#snake; tests: `cd arcade && npm test`; porting guide: `arcade/PORTING.md`
 
 Note: Always run games in the background (with &), not the foreground. No need to pkill in advance.
 Note: Games without a pyproject.toml use inline script metadata and must be run with `uv run --script <file>.py` instead of `uv run python <file>.py`.

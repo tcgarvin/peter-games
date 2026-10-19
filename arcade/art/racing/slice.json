@@ -1,0 +1,180 @@
+{
+  "layouts": {
+    "portrait": {
+      "base": "src/portrait-base.png",
+      "variants": {
+        "up": "src/portrait-up.png",
+        "down": "src/portrait-down.png",
+        "left": "src/portrait-left.png",
+        "right": "src/portrait-right.png",
+        "pressed": "src/portrait-pressed.png"
+      },
+      "screen_near": [
+        512,
+        510
+      ],
+      "screen_aspect": [
+        16,
+        10
+      ],
+      "marquee": [
+        65,
+        30,
+        960,
+        235
+      ],
+      "controls": {
+        "p1_stick": {
+          "type": "joystick",
+          "near": [
+            265,
+            860
+          ],
+          "search": [
+            200,
+            240
+          ]
+        },
+        "p1_fire": {
+          "type": "button",
+          "near": [
+            418,
+            855
+          ]
+        },
+        "p2_stick": {
+          "type": "joystick",
+          "near": [
+            745,
+            860
+          ],
+          "search": [
+            200,
+            240
+          ]
+        },
+        "p2_fire": {
+          "type": "button",
+          "near": [
+            888,
+            855
+          ]
+        },
+        "start_1p": {
+          "type": "button",
+          "near": [
+            408,
+            962
+          ],
+          "search": [
+            150,
+            100
+          ]
+        },
+        "start_2p": {
+          "type": "button",
+          "near": [
+            620,
+            962
+          ],
+          "search": [
+            150,
+            100
+          ]
+        }
+      }
+    },
+    "landscape": {
+      "base": "src/landscape-base.png",
+      "variants": {
+        "up": "src/landscape-up.png",
+        "down": "src/landscape-down.png",
+        "left": "src/landscape-left.png",
+        "right": "src/landscape-right.png",
+        "pressed": "src/landscape-pressed.png"
+      },
+      "screen_near": [
+        768,
+        490
+      ],
+      "screen_aspect": [
+        16,
+        10
+      ],
+      "marquee": [
+        60,
+        30,
+        1480,
+        210
+      ],
+      "controls": {
+        "p1_stick": {
+          "type": "joystick",
+          "near": [
+            205,
+            380
+          ],
+          "search": [
+            220,
+            250
+          ]
+        },
+        "p1_fire": {
+          "type": "button",
+          "near": [
+            200,
+            570
+          ],
+          "search": [
+            150,
+            110
+          ]
+        },
+        "start_1p": {
+          "type": "button",
+          "near": [
+            200,
+            700
+          ],
+          "search": [
+            150,
+            100
+          ]
+        },
+        "p2_stick": {
+          "type": "joystick",
+          "near": [
+            1328,
+            380
+          ],
+          "search": [
+            220,
+            250
+          ]
+        },
+        "p2_fire": {
+          "type": "button",
+          "near": [
+            1333,
+            570
+          ],
+          "search": [
+            150,
+            110
+          ]
+        },
+        "start_2p": {
+          "type": "button",
+          "near": [
+            1333,
+            700
+          ],
+          "search": [
+            150,
+            100
+          ]
+        }
+      }
+    }
+  }
+}
