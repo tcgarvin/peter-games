@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "artillery"
+version = "0.1.0"
+description = "Artillery game with random hills and two players"
+requires-python = ">=3.8"
+dependencies = [
+    "pygame",
+]

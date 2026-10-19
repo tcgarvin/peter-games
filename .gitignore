@@ -42,3 +42,8 @@ Thumbs.db
 
 # Logs
 *.log
+# Codex originals for the arcade art: too big for git, backed up as a GitHub release asset
+arcade/art/*/src/
+
+# npm
+node_modules/

@@ -1,0 +1,18 @@
+{
+  "sail_acceleration": {
+    "none": 0.001,
+    "mid": 0.02,
+    "full": 0.04
+  },
+  "ship": {
+    "rotation_speed": 1.0,
+    "drag": 0.98,
+    "max_velocity": 2.0
+  },
+  "cannon": {
+    "cooldown": 90,
+    "speed": 2.5,
+    "lifetime": 180,
+    "broadside_count": 3
+  }
+}

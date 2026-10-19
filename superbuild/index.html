@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Superbuild Racing</title>
+<script type="importmap">
+{
+  "imports": {
+    "three":         "https://esm.sh/three@0.169.0",
+    "three/addons/": "https://esm.sh/three@0.169.0/examples/jsm/",
+    "peerjs":        "https://esm.sh/peerjs@1.5.4"
+  }
+}
+</script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; color: #fff; }
+
+#container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+#container > canvas {
+  display: block;
+}
+
+/* ---- Overlays ---- */
+.overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.overlay.interactive { pointer-events: auto; }
+.hidden { display: none !important; }
+
+/* ---- Menu ---- */
+#menu {
+  background: rgba(0,0,0,0.75);
+}
+#menu h1 {
+  font-size: 3rem;
+  letter-spacing: 0.2em;
+  color: #ffdd00;
+  text-shadow: 0 0 20px #ffaa00, 0 0 40px #ff6600;
+  margin-bottom: 0.3em;
+}
+#menu .subtitle {
+  font-size: 1rem;
+  color: #aaa;
+  margin-bottom: 2.5em;
+}
+.menu-btn {
+  background: transparent;
+  border: 2px solid #ffdd00;
+  color: #ffdd00;
+  font-family: inherit;
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  padding: 0.65em 2.5em;
+  margin: 0.4em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.menu-btn:hover {
+  background: #ffdd00;
+  color: #000;
+}
+.room-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.8em;
+}
+.room-row input {
+  background: #111;
+  border: 2px solid #555;
+  color: #fff;
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.4em 0.8em;
+  width: 12em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.room-row input:focus { outline: none; border-color: #ffdd00; }
+#room-display {
+  margin-top: 1em;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+#room-display span {
+  color: #ffdd00;
+  font-size: 1.2rem;
+  letter-spacing: 0.15em;
+}
+#net-status {
+  margin-top: 0.5em;
+  font-size: 0.8rem;
+  color: #888;
+  min-height: 1.2em;
+}
+
+/* ---- Countdown ---- */
+#countdown {
+  pointer-events: none;
+}
+#countdown-num {
+  font-size: 12rem;
+  font-weight: bold;
+  color: #ffdd00;
+  text-shadow: 0 0 30px #ff8800, 0 0 60px #ff4400;
+  line-height: 1;
+}
+
+/* ---- HUD ---- */
+#hud {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+#hud-lap {
+  position: absolute;
+  top: 18px; left: 24px;
+  font-size: 1.3rem;
+  color: #fff;
+  text-shadow: 1px 1px 4px #000;
+}
+#hud-speed {
+  position: absolute;
+  top: 18px; right: 24px;
+  font-size: 1.3rem;
+  color: #fff;
+  text-shadow: 1px 1px 4px #000;
+  text-align: right;
+}
+#hud-checkpoint {
+  position: absolute;
+  bottom: 28px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 1rem;
+  color: #ffdd00;
+  text-shadow: 1px 1px 4px #000;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#hud-checkpoint.show { opacity: 1; }
+
+/* ---- Minimap ---- */
+#minimap {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 140px;
+  height: 100px;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 4px;
+}
+
+/* ---- Finish ---- */
+#finish {
+  background: rgba(0,0,0,0.82);
+}
+#finish h2 {
+  font-size: 2.5rem;
+  color: #ffdd00;
+  text-shadow: 0 0 20px #ff8800;
+  margin-bottom: 0.5em;
+  letter-spacing: 0.15em;
+}
+#finish-times {
+  font-size: 1rem;
+  color: #ccc;
+  margin-bottom: 1.5em;
+  line-height: 1.8;
+}
+
+/* ---- Peers list ---- */
+#peers-hud {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.85rem;
+  color: #aaa;
+  text-shadow: 1px 1px 3px #000;
+}
+</style>
+</head>
+<body>
+<div id="container">
+  <!-- Three.js canvas inserted here by Renderer -->
+
+  <!-- HUD (visible during racing) -->
+  <div id="hud" class="hidden">
+    <div id="hud-lap">LAP 0/3</div>
+    <div id="hud-speed">0 km/h</div>
+    <div id="hud-checkpoint">CHECKPOINT!</div>
+    <div id="peers-hud"></div>
+  </div>
+
+  <!-- Minimap -->
+  <canvas id="minimap" width="140" height="100"></canvas>
+
+  <!-- Countdown overlay -->
+  <div id="countdown" class="overlay hidden">
+    <div id="countdown-num">3</div>
+  </div>
+
+  <!-- Menu -->
+  <div id="menu" class="overlay interactive">
+    <h1>SUPERBUILD</h1>
+    <p class="subtitle">MODE-7 RACING</p>
+    <button class="menu-btn" id="btn-solo">SOLO RACE</button>
+    <button class="menu-btn" id="btn-host">HOST GAME</button>
+    <div class="room-row">
+      <input id="join-code" placeholder="ROOM CODE" maxlength="20" />
+      <button class="menu-btn" id="btn-join">JOIN</button>
+    </div>
+    <div id="room-display" class="hidden">
+      Room code: <span id="room-code-val"></span>
+      <br><small>(share with friends, then press START)</small>
+    </div>
+    <button class="menu-btn hidden" id="btn-start-host">START RACE</button>
+    <div id="net-status"></div>
+  </div>
+
+  <!-- Finish screen -->
+  <div id="finish" class="overlay hidden interactive">
+    <h2>RACE OVER</h2>
+    <div id="finish-times"></div>
+    <button class="menu-btn" id="btn-again">RACE AGAIN</button>
+  </div>
+</div>
+
+<script type="module">
+import { Track, TOTAL_LAPS }  from './track.js';
+import { GameSim }            from './sim.js';
+import { Renderer }           from './render.js';
+import { NetManager }         from './net.js';
+
+// ---- Constants ----
+const FIXED_DT  = 1 / 60;
+const SPEED_SCALE = 3.6; // world-units/tick * 60fps * this ≈ display "km/h"
+
+// ---- Game objects ----
+const track    = new Track();
+const sim      = new GameSim(track);
+const renderer = new Renderer(document.getElementById('container'), track);
+const net      = new NetManager(sim);
+
+// ---- Phase management ----
+// 'menu' | 'countdown' | 'racing' | 'finished'
+let phase = 'menu';
+
+// ---- Input ----
+const keys = new Set();
+document.addEventListener('keydown', (e) => keys.add(e.code));
+document.addEventListener('keyup',   (e) => keys.delete(e.code));
+
+function gatherInput() {
+  return {
+    throttle: (keys.has('ArrowUp')    || keys.has('KeyW')) ? 1 : 0,
+    brake:    (keys.has('ArrowDown')  || keys.has('KeyS')) ? 1 : 0,
+    steer:    (keys.has('ArrowLeft')  || keys.has('KeyA')) ? -1
+            : (keys.has('ArrowRight') || keys.has('KeyD')) ?  1 : 0,
+  };
+}
+
+// ---- Net event wiring ----
+net.addEventListener('peer-joined', (e) => {
+  const { id } = e.detail;
+  sim.addCar(id, false);
+  setNetStatus(`${net.peers.length + 1} player(s) connected`);
+  updatePeersHud();
+});
+
+net.addEventListener('peer-left', (e) => {
+  sim.removeCar(e.detail.id);
+  updatePeersHud();
+});
+
+net.addEventListener('remote-snapshot', (e) => {
+  const { id, snapshot } = e.detail;
+  sim.applyRemoteState(id, snapshot);
+});
+
+// ---- HUD helpers ----
+let cpFlashTimeout = null;
+function updateHud() {
+  const car = sim.localCar;
+  if (!car) return;
+
+  document.getElementById('hud-lap').textContent =
+    `LAP ${Math.min(car.lapCount + 1, TOTAL_LAPS)}/${TOTAL_LAPS}`;
+
+  const kmh = Math.abs(car.speed) * 60 * SPEED_SCALE;
+  document.getElementById('hud-speed').textContent = `${Math.round(kmh)} km/h`;
+
+  // Flash checkpoint notice
+  const prevSeqIdx = car._prevCheckpointSeqIdx ?? 0;
+  if (car.checkpointSeqIdx !== prevSeqIdx) {
+    car._prevCheckpointSeqIdx = car.checkpointSeqIdx;
+    const el = document.getElementById('hud-checkpoint');
+    el.textContent = car.checkpointSeqIdx >= 4 ? 'ALL CHECKPOINTS!' : 'CHECKPOINT!';
+    el.classList.add('show');
+    if (cpFlashTimeout) clearTimeout(cpFlashTimeout);
+    cpFlashTimeout = setTimeout(() => el.classList.remove('show'), 1200);
+  }
+}
+
+function updatePeersHud() {
+  const n = net.peers.length + 1;
+  document.getElementById('peers-hud').textContent = n > 1 ? `${n} players` : '';
+}
+
+function setNetStatus(msg) {
+  document.getElementById('net-status').textContent = msg;
+}
+
+// ---- Countdown display ----
+let lastCountdownShown = -1;
+function updateCountdown() {
+  const v = sim.countdown;
+  if (v !== lastCountdownShown) {
+    lastCountdownShown = v;
+    const el = document.getElementById('countdown-num');
+    el.textContent = String(v);
+    el.style.color = '#ffdd00';
+  }
+}
+
+// ---- Phase transitions ----
+function startCountdown() {
+  phase = 'countdown';
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('hud').classList.remove('hidden');
+  document.getElementById('countdown').classList.remove('hidden');
+  document.getElementById('minimap').style.display = 'block';
+}
+
+function beginRace() {
+  phase = 'racing';
+  // Show "GO!" briefly before hiding the overlay
+  const numEl = document.getElementById('countdown-num');
+  numEl.textContent = 'GO!';
+  numEl.style.color = '#00ff88';
+  setTimeout(() => document.getElementById('countdown').classList.add('hidden'), 700);
+}
+
+function showFinish() {
+  phase = 'finished';
+  document.getElementById('finish').classList.remove('hidden');
+
+  // Build times table
+  const car = sim.localCar;
+  let html = '';
+  if (car) {
+    const best = car.bestLapTicks < Infinity
+      ? (car.bestLapTicks / 60).toFixed(2) + 's'
+      : '--';
+    html = `Best lap: ${best}`;
+  }
+  document.getElementById('finish-times').innerHTML = html;
+}
+
+// ---- Main game loop (fixed timestep) ----
+let accumulator = 0;
+let lastTime    = 0;
+
+function mainLoop(timestamp) {
+  requestAnimationFrame(mainLoop);
+
+  const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+  lastTime = timestamp;
+
+  if (phase === 'countdown' || phase === 'racing') {
+    accumulator += dt;
+
+    while (accumulator >= FIXED_DT) {
+      const inputs = gatherInput();
+      sim.tick(inputs);
+      net.sendTick(sim.getLocalSnapshot());
+      accumulator -= FIXED_DT;
+    }
+
+    const interp = accumulator / FIXED_DT;
+    renderer.render(sim, interp);
+
+    if (phase === 'countdown') {
+      updateCountdown();
+      if (sim.raceStarted) beginRace();
+    }
+
+    if (phase === 'racing') {
+      updateHud();
+      if (sim.raceFinished) showFinish();
+    }
+  }
+}
+
+requestAnimationFrame(mainLoop);
+
+// ---- UI button handlers ----
+
+document.getElementById('btn-solo').addEventListener('click', () => {
+  sim.addCar('local', true);
+  startCountdown();
+});
+
+document.getElementById('btn-host').addEventListener('click', async () => {
+  document.getElementById('btn-host').disabled = true;
+  setNetStatus('Creating room…');
+  try {
+    const code = await net.host();
+    sim.addCar(net.localId, true);
+    document.getElementById('room-code-val').textContent = code;
+    document.getElementById('room-display').classList.remove('hidden');
+    document.getElementById('btn-start-host').classList.remove('hidden');
+    setNetStatus('Waiting for players to join…');
+  } catch (e) {
+    setNetStatus('Failed to create room: ' + e.message);
+    document.getElementById('btn-host').disabled = false;
+  }
+});
+
+document.getElementById('btn-start-host').addEventListener('click', () => {
+  net.broadcastStart();
+  startCountdown();
+});
+
+document.getElementById('btn-join').addEventListener('click', async () => {
+  const code = document.getElementById('join-code').value.trim().toUpperCase();
+  if (!code) return;
+  document.getElementById('btn-join').disabled = true;
+  setNetStatus('Connecting to ' + code + '…');
+  try {
+    await net.join(code);
+    sim.addCar(net.localId, true);
+    setNetStatus('Connected! Waiting for host to start…');
+    // Hide non-relevant buttons
+    document.getElementById('btn-solo').classList.add('hidden');
+    document.getElementById('btn-host').classList.add('hidden');
+    document.getElementById('btn-join').disabled = false;
+  } catch (e) {
+    setNetStatus('Could not connect: ' + e.message);
+    document.getElementById('btn-join').disabled = false;
+  }
+});
+
+net.addEventListener('init', (e) => {
+  // Received peer list from host at connection time; add any existing remote cars.
+  const { existingPeers } = e.detail;
+  existingPeers?.forEach(id => {
+    if (!sim.cars.find(c => c.id === id)) sim.addCar(id, false);
+  });
+});
+
+net.addEventListener('start', () => {
+  // Host fired the start signal — begin countdown on this client too.
+  startCountdown();
+});
+
+document.getElementById('btn-again').addEventListener('click', () => {
+  location.reload();
+});
+</script>
+</body>
+</html>

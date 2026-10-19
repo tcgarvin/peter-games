@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dreadnoughts</title>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://esm.sh/three@0.169.0",
+    "three/addons/": "https://esm.sh/three@0.169.0/examples/jsm/"
+  }
+}
+</script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; overflow: hidden; font-family: 'Courier New', monospace; }
+#canvas-container { position: relative; width: 100vw; height: 100vh; }
+canvas { display: block; }
+
+.overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.overlay.interactive { pointer-events: auto; }
+.hidden { display: none !important; }
+
+/* Menu */
+#menu { background: rgba(0,0,0,0.8); }
+#menu h1 {
+  font-size: 4.5rem; letter-spacing: 0.3em;
+  color: #99ddff;
+  text-shadow: 0 0 12px #448899;
+  margin-bottom: 0.4rem;
+  animation: pulse 3s ease-in-out infinite;
+}
+#menu .subtitle {
+  font-size: 0.9rem; letter-spacing: 0.5em; color: #446677; margin-bottom: 2.5rem;
+}
+@keyframes pulse {
+  0%,100% { text-shadow: 0 0 12px #448899; }
+  50%      { text-shadow: 0 0 22px #44aabb, 0 0 40px #224455; }
+}
+.menu-option {
+  font-size: 1.4rem; margin: 0.5rem 0; padding: 0.4rem 2.5rem;
+  color: #556; cursor: pointer; transition: color 0.15s; letter-spacing: 0.12em;
+  pointer-events: auto;
+}
+.menu-option.selected { color: #ccee66; text-shadow: 0 0 8px #99aa33; }
+.menu-option:hover { color: #99ddff; }
+.menu-hint { margin-top: 1.5rem; font-size: 0.82rem; color: #445; letter-spacing: 0.08em; }
+.menu-rules {
+  margin-top: 1.2rem; text-align: center; font-size: 0.76rem;
+  color: #556677; line-height: 2.2; max-width: 460px; letter-spacing: 0.04em;
+}
+
+/* HUD */
+#hud {
+  position: absolute; top: 0; left: 0; width: 100%;
+  pointer-events: none; padding: 14px 20px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.ship-panel { min-width: 220px; }
+.ship-panel.right { text-align: right; }
+.ship-label { font-size: 0.8rem; letter-spacing: 0.22em; margin-bottom: 4px; color: #aaa; }
+.hp-bar-bg {
+  width: 220px; height: 10px; background: #0a0a0a; border: 1px solid #222;
+  overflow: hidden; margin-bottom: 3px;
+}
+.ship-panel.right .hp-bar-bg { margin-left: auto; }
+.hp-bar { height: 100%; transition: width 0.1s linear; }
+.hp-bar.cyan  { background: #44bbcc; }
+.hp-bar.red   { background: #cc4433; }
+.weapon-info  { font-size: 0.68rem; letter-spacing: 0.05em; color: #667; margin-bottom: 4px; }
+.gun-groups   { display: flex; gap: 10px; margin-top: 2px; }
+.ship-panel.right .gun-groups { justify-content: flex-end; }
+.gun-group    { display: flex; gap: 3px; align-items: center; }
+.gun-group-label { font-size: 0.55rem; color: #445; letter-spacing: 0.1em; margin-right: 2px; }
+.gun-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #33aa66; transition: background 0.4s;
+}
+.gun-dot.damaged { background: #aa6622; }
+.gun-dot.dead    { background: #1a1a1a; }
+.sys-row { font-size: 0.62rem; letter-spacing: 0.1em; margin-top: 3px; }
+
+/* Debug overlay */
+#debug {
+  position: absolute; bottom: 12px; left: 12px;
+  font-size: 0.68rem; line-height: 1.7; color: #00cc77;
+  background: rgba(0,0,0,0.8); padding: 8px 12px;
+  pointer-events: none; white-space: pre;
+}
+
+/* Gameover */
+#gameover { background: rgba(0,0,0,0.82); }
+#gameover h2 { font-size: 3rem; letter-spacing: 0.22em; margin-bottom: 1rem; color: #99ddff; text-shadow: 0 0 10px #336677; }
+#gameover p  { font-size: 1rem; color: #667; margin: 0.3rem 0; }
+#gameover .hint { margin-top: 1.5rem; font-size: 0.85rem; color: #445; letter-spacing: 0.08em; }
+</style>
+</head>
+<body>
+<div id="canvas-container">
+
+  <div class="overlay interactive" id="menu">
+    <h1>DREADNOUGHTS</h1>
+    <div class="subtitle">CAPITAL SHIP COMBAT</div>
+    <div class="menu-option selected" data-idx="0">1 PLAYER  (vs AI)</div>
+    <div class="menu-option" data-idx="1">2 PLAYERS</div>
+    <div class="menu-hint" style="color:#556">↑ ↓ to select &nbsp;·&nbsp; ENTER to start</div>
+    <div class="menu-rules">
+      Side-mounted batteries are fixed broadside<br>
+      Turn to bring your guns to bear<br>
+      Individual guns can be destroyed<br>
+      Reduce enemy hull to zero to win
+    </div>
+  </div>
+
+  <div id="hud" class="hidden">
+    <div class="ship-panel" id="panel-0">
+      <div class="ship-label" id="label-0">PLAYER</div>
+      <div class="hp-bar-bg"><div id="hp-bar-0" class="hp-bar cyan" style="width:100%"></div></div>
+      <div class="weapon-info" id="weapon-0"></div>
+      <div class="gun-groups" id="gun-groups-0"></div>
+      <div class="sys-row" id="sys-row-0"></div>
+    </div>
+    <div style="flex:1"></div>
+    <div class="ship-panel right" id="panel-1">
+      <div class="ship-label" id="label-1">AI</div>
+      <div class="hp-bar-bg"><div id="hp-bar-1" class="hp-bar red" style="width:100%"></div></div>
+      <div class="weapon-info" id="weapon-1"></div>
+      <div class="gun-groups" id="gun-groups-1"></div>
+      <div class="sys-row" id="sys-row-1"></div>
+    </div>
+  </div>
+
+  <div id="debug" class="hidden"></div>
+
+  <div class="overlay interactive hidden" id="gameover">
+    <h2 id="gameover-title">GAME OVER</h2>
+    <p id="gameover-sub"></p>
+    <div class="hint">R to restart &nbsp;·&nbsp; ESC for menu</div>
+  </div>
+
+</div>
+<script type="module" src="game.js"></script>
+</body>
+</html>
