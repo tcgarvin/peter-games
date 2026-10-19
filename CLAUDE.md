@@ -18,6 +18,7 @@ For each game directory:
   - Spacewar (pygame): `cd spacewar && uv run python spacewar.py &`
   - Spacewar Web (Three.js): `cd spacewar-web && python3 -m http.server 8000 &` then open http://localhost:8000
   - Racing: `cd racing && uv run --script racing.py &`
+  - Quarterback Simulator (a guest game by one of the Bullock brothers): `cd quarterback && uv run python game.py &`
   - Arcade (web ports of all the games in cabinets): `cd arcade && python3 -m http.server 8765 &` then open http://localhost:8765 (lobby) or http://localhost:8765/#snake; tests: `cd arcade && npm test`; porting guide: `arcade/PORTING.md`
   - The arcade is published at https://www.tcgarvin.com/vibe/arcade/ as a copy. This repo is the source of truth: after changing `arcade/`, commit and push here, then in ~/code/tcgarvin.com run `npm run sync-arcade`, commit and push (Netlify deploys on push).
 

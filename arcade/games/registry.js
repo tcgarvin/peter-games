@@ -10,4 +10,5 @@ export const GAMES = [
   { id: 'spacewar', title: 'Spacewar', players: '1-2', blurb: 'Haul cargo through the asteroids. Earn $5 first.' },
   { id: 'omd', title: 'Orcs Must Die', players: '1-2', blurb: 'Hold the gate together against waves of orcs.' },
   { id: 'army', title: 'Army', players: '1-2', blurb: 'Command three regiments of line infantry.' },
+  { id: 'quarterback', title: 'Quarterback Simulator', players: '1', blurb: 'A guest game from the Bullock Bros. Throw it, catch it, run it in.' },
 ];

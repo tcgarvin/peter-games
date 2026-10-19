@@ -1,0 +1,236 @@
+{
+  "layouts": {
+    "portrait": {
+      "image": "cabinet-portrait.webp",
+      "size": [
+        1024,
+        1536
+      ],
+      "screen": {
+        "x": 155,
+        "y": 336,
+        "w": 712,
+        "h": 356
+      },
+      "controls": {
+        "p1_stick": {
+          "type": "joystick",
+          "hit": {
+            "cx": 370,
+            "cy": 790,
+            "r": 83
+          },
+          "states": {
+            "neutral": {
+              "file": "portrait-p1_stick-neutral.webp",
+              "x": 276,
+              "y": 681
+            },
+            "up": {
+              "file": "portrait-p1_stick-up.webp",
+              "x": 276,
+              "y": 681
+            },
+            "down": {
+              "file": "portrait-p1_stick-down.webp",
+              "x": 276,
+              "y": 681
+            },
+            "left": {
+              "file": "portrait-p1_stick-left.webp",
+              "x": 276,
+              "y": 681
+            },
+            "right": {
+              "file": "portrait-p1_stick-right.webp",
+              "x": 276,
+              "y": 681
+            }
+          }
+        },
+        "start_1p": {
+          "type": "button",
+          "hit": {
+            "cx": 546,
+            "cy": 762,
+            "r": 42
+          },
+          "states": {
+            "up": {
+              "file": "portrait-start_1p-up.webp",
+              "x": 504,
+              "y": 720
+            },
+            "down": {
+              "file": "portrait-start_1p-down.webp",
+              "x": 504,
+              "y": 720
+            }
+          }
+        },
+        "p1_fire": {
+          "type": "button",
+          "hit": {
+            "cx": 595,
+            "cy": 825,
+            "r": 52
+          },
+          "states": {
+            "up": {
+              "file": "portrait-p1_fire-up.webp",
+              "x": 543,
+              "y": 776
+            },
+            "down": {
+              "file": "portrait-p1_fire-down.webp",
+              "x": 543,
+              "y": 776
+            }
+          }
+        },
+        "p1_fire2": {
+          "type": "button",
+          "hit": {
+            "cx": 699,
+            "cy": 825,
+            "r": 48
+          },
+          "states": {
+            "up": {
+              "file": "portrait-p1_fire2-up.webp",
+              "x": 651,
+              "y": 777
+            },
+            "down": {
+              "file": "portrait-p1_fire2-down.webp",
+              "x": 651,
+              "y": 777
+            }
+          }
+        }
+      },
+      "marquee": {
+        "x": 40,
+        "y": 20,
+        "w": 945,
+        "h": 230
+      }
+    },
+    "landscape": {
+      "image": "cabinet-landscape.webp",
+      "size": [
+        1536,
+        1024
+      ],
+      "screen": {
+        "x": 299,
+        "y": 258,
+        "w": 936,
+        "h": 468
+      },
+      "controls": {
+        "p1_stick": {
+          "type": "joystick",
+          "hit": {
+            "cx": 176,
+            "cy": 440,
+            "r": 107
+          },
+          "states": {
+            "neutral": {
+              "file": "landscape-p1_stick-neutral.webp",
+              "x": 62,
+              "y": 322
+            },
+            "up": {
+              "file": "landscape-p1_stick-up.webp",
+              "x": 62,
+              "y": 322
+            },
+            "down": {
+              "file": "landscape-p1_stick-down.webp",
+              "x": 62,
+              "y": 322
+            },
+            "left": {
+              "file": "landscape-p1_stick-left.webp",
+              "x": 62,
+              "y": 322
+            },
+            "right": {
+              "file": "landscape-p1_stick-right.webp",
+              "x": 62,
+              "y": 322
+            }
+          }
+        },
+        "start_1p": {
+          "type": "button",
+          "hit": {
+            "cx": 173,
+            "cy": 623,
+            "r": 58
+          },
+          "states": {
+            "up": {
+              "file": "landscape-start_1p-up.webp",
+              "x": 117,
+              "y": 566
+            },
+            "down": {
+              "file": "landscape-start_1p-down.webp",
+              "x": 117,
+              "y": 566
+            }
+          }
+        },
+        "p1_fire": {
+          "type": "button",
+          "hit": {
+            "cx": 1362,
+            "cy": 441,
+            "r": 66
+          },
+          "states": {
+            "up": {
+              "file": "landscape-p1_fire-up.webp",
+              "x": 1297,
+              "y": 378
+            },
+            "down": {
+              "file": "landscape-p1_fire-down.webp",
+              "x": 1297,
+              "y": 378
+            }
+          }
+        },
+        "p1_fire2": {
+          "type": "button",
+          "hit": {
+            "cx": 1363,
+            "cy": 587,
+            "r": 60
+          },
+          "states": {
+            "up": {
+              "file": "landscape-p1_fire2-up.webp",
+              "x": 1303,
+              "y": 528
+            },
+            "down": {
+              "file": "landscape-p1_fire2-down.webp",
+              "x": 1303,
+              "y": 528
+            }
+          }
+        }
+      },
+      "marquee": {
+        "x": 60,
+        "y": 20,
+        "w": 1420,
+        "h": 215
+      }
+    }
+  }
+}
